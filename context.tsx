@@ -58,46 +58,36 @@ export function AppProvider({ children }: AppProviderProps) {
     const [campaigns, setCampaigns] = useState<any[]>([]);
     const [stats, setStats] = useState<any | null>(null);
 
+    // Check if running in production (not localhost)
+    const isProduction = typeof window !== 'undefined' &&
+        !window.location.hostname.includes('localhost') &&
+        !window.location.hostname.includes('127.0.0.1');
+
     // Initialize Telegram WebApp
     useEffect(() => {
         const tg = (window as any).Telegram?.WebApp;
 
-        if (tg) {
+        if (tg && tg.initData) {
+            // Opened from Telegram Mini App - authenticate with initData
             tg.ready();
             tg.expand();
 
-            // Authenticate with backend
-            if (tg.initData) {
-                authApi.validate(tg.initData)
-                    .then(({ user }) => {
-                        setUser(user);
-                        setIsLoading(false);
-                    })
-                    .catch((err) => {
-                        console.error('Auth failed:', err);
-                        setError('Authentication failed');
-                        setIsLoading(false);
-                    });
-            } else {
-                // Development mode - try to get stored dev user
-                const devId = localStorage.getItem('dev_telegram_id');
-                if (devId) {
-                    authApi.getMe()
-                        .then((user) => {
-                            setUser(user);
-                            setIsLoading(false);
-                        })
-                        .catch(() => {
-                            setIsLoading(false);
-                        });
-                } else {
-                    // Create a dev user for testing
-                    localStorage.setItem('dev_telegram_id', '123456789');
+            authApi.validate(tg.initData)
+                .then(({ user }) => {
+                    setUser(user);
                     setIsLoading(false);
-                }
-            }
+                })
+                .catch((err) => {
+                    console.error('Auth failed:', err);
+                    setError('Ошибка авторизации. Попробуйте перезапустить приложение.');
+                    setIsLoading(false);
+                });
+        } else if (isProduction) {
+            // Production but NOT opened from Telegram - BLOCK ACCESS
+            setError('Откройте приложение через Telegram бота @StarClipBot');
+            setIsLoading(false);
         } else {
-            // Not in Telegram - development mode
+            // Development mode - allow dev login
             const devId = localStorage.getItem('dev_telegram_id');
             if (devId) {
                 authApi.getMe()
@@ -106,16 +96,15 @@ export function AppProvider({ children }: AppProviderProps) {
                         setIsLoading(false);
                     })
                     .catch(() => {
-                        // Create test user in dev mode
-                        localStorage.setItem('dev_telegram_id', '123456789');
+                        setError('Dev user not found. Run /start in bot first.');
                         setIsLoading(false);
                     });
             } else {
-                localStorage.setItem('dev_telegram_id', '123456789');
+                setError('Set dev_telegram_id in localStorage. Run /start in bot to get your ID.');
                 setIsLoading(false);
             }
         }
-    }, []);
+    }, [isProduction]);
 
     const refreshUser = async () => {
         try {

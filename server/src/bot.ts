@@ -13,10 +13,13 @@ export function initBot() {
     bot = new TelegramBot(token, { polling: true });
 
     const webAppUrl = process.env.WEBAPP_URL || 'http://localhost:5173';
-    const isDev = process.env.NODE_ENV === 'development' || webAppUrl.startsWith('http://localhost');
+    // Production = HTTPS URL, Dev = HTTP or localhost
+    const isProduction = webAppUrl.startsWith('https://');
+
+    console.log(`🔧 Bot config: WEBAPP_URL=${webAppUrl}, isProduction=${isProduction}`);
 
     // Set up Menu Button for Mini App (only in production with HTTPS)
-    if (!isDev && webAppUrl.startsWith('https://')) {
+    if (isProduction) {
         bot.setChatMenuButton({
             menu_button: {
                 type: 'web_app',
@@ -56,7 +59,7 @@ export function initBot() {
 
             console.log(`User registered/updated: @${user.username || user.id} (ID: ${user.id})`);
 
-            if (isDev) {
+            if (!isProduction) {
                 // Development mode - show info about how to test
                 await bot!.sendMessage(chatId,
                     `👋 Привет, ${user.first_name}!\n\n` +
