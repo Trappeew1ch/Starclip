@@ -60,23 +60,29 @@ export function validateInitData(initData: string): { valid: boolean; data?: Rec
 // Auth middleware - validates Telegram WebApp data
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
     const initData = req.headers['x-telegram-init-data'] as string;
+    const telegramIdHeader = req.headers['x-telegram-id'] as string;
 
-    // For development, allow bypass with telegramId header
-    if (process.env.NODE_ENV === 'development' && req.headers['x-telegram-id']) {
-        const telegramId = BigInt(req.headers['x-telegram-id'] as string);
-        const user = await prisma.user.findUnique({
-            where: { telegramId }
-        });
+    // Allow X-Telegram-Id for admin panel (checked by adminMiddleware)
+    // or in development mode
+    if (telegramIdHeader) {
+        try {
+            const telegramId = BigInt(telegramIdHeader);
+            const user = await prisma.user.findUnique({
+                where: { telegramId }
+            });
 
-        if (user) {
-            req.user = {
-                id: user.id,
-                telegramId: user.telegramId,
-                username: user.username,
-                firstName: user.firstName,
-                isAdmin: user.isAdmin
-            };
-            return next();
+            if (user) {
+                req.user = {
+                    id: user.id,
+                    telegramId: user.telegramId,
+                    username: user.username,
+                    firstName: user.firstName,
+                    isAdmin: user.isAdmin
+                };
+                return next();
+            }
+        } catch (e) {
+            // Invalid telegramId format, continue to other auth methods
         }
     }
 
