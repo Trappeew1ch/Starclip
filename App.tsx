@@ -21,7 +21,7 @@ const banners: BannerSlide[] = [
 ];
 
 function AppContent() {
-  const { offers, campaigns, loadOffers, loadCampaigns, joinCampaign, isLoading } = useApp();
+  const { offers, campaigns, loadOffers, loadCampaigns, joinCampaign, isLoading, user } = useApp();
 
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
@@ -94,7 +94,7 @@ function AppContent() {
         {renderContent()}
 
         {currentView !== 'offer-details' && (
-          <BottomNav currentView={currentView} onNavigate={setCurrentView} />
+          <BottomNav currentView={currentView} onNavigate={setCurrentView} isAdmin={user?.isAdmin} />
         )}
       </div>
     </div>
