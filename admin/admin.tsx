@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload } from 'lucide-react';
+import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard } from 'lucide-react';
 
 // Use relative URL so it works both locally and in production
 const API_URL = '/api';
@@ -376,9 +376,9 @@ function AdminPanel() {
                 </div>
             </header>
 
-            <div className="max-w-7xl mx-auto p-4 flex gap-6">
-                {/* Sidebar */}
-                <nav className="w-56 flex-shrink-0">
+            <div className="max-w-7xl mx-auto p-4 pb-20 md:pb-4 flex gap-6">
+                {/* Sidebar - hidden on mobile */}
+                <nav className="hidden md:block w-56 flex-shrink-0">
                     <div className="sticky top-20 space-y-1">
                         {[
                             { id: 'dashboard', icon: DollarSign, label: 'Дашборд' },
@@ -411,8 +411,8 @@ function AdminPanel() {
                     {/* Dashboard */}
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
-                            {/* Stats Grid */}
-                            <div className="grid grid-cols-4 gap-4">
+                            {/* Stats Grid - responsive */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                 {[
                                     { label: 'Пользователей', value: stats?.totalUsers || 0, color: 'text-blue-400' },
                                     { label: 'Активных офферов', value: stats?.activeOffers || 0, color: 'text-green-400' },
@@ -535,35 +535,37 @@ function AdminPanel() {
                             </div>
 
                             <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b border-white/5">
-                                            <th className="text-left p-4 text-sm font-medium text-zinc-500">Пользователь</th>
-                                            <th className="text-left p-4 text-sm font-medium text-zinc-500">Баланс</th>
-                                            <th className="text-left p-4 text-sm font-medium text-zinc-500">Клипы</th>
-                                            <th className="text-left p-4 text-sm font-medium text-zinc-500">Кампании</th>
-                                            <th className="p-4"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {users.map(user => (
-                                            <tr
-                                                key={user.id}
-                                                className="border-b border-white/5 hover:bg-white/5 cursor-pointer"
-                                                onClick={() => handleUserClick(user.id)}
-                                            >
-                                                <td className="p-4">
-                                                    <p className="font-medium">@{user.username || 'anonymous'}</p>
-                                                    <p className="text-sm text-zinc-500">{user.firstName}</p>
-                                                </td>
-                                                <td className="p-4 text-emerald-400 font-medium">{user.balance.toFixed(0)} ₽</td>
-                                                <td className="p-4">{user.clipsCount}</td>
-                                                <td className="p-4">{user.campaignsCount}</td>
-                                                <td className="p-4"><ChevronRight size={16} className="text-zinc-500" /></td>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full min-w-[500px]">
+                                        <thead>
+                                            <tr className="border-b border-white/5">
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Пользователь</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Баланс</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Клипы</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Кампании</th>
+                                                <th className="p-4"></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {users.map(user => (
+                                                <tr
+                                                    key={user.id}
+                                                    className="border-b border-white/5 hover:bg-white/5 cursor-pointer"
+                                                    onClick={() => handleUserClick(user.id)}
+                                                >
+                                                    <td className="p-4">
+                                                        <p className="font-medium">@{user.username || 'anonymous'}</p>
+                                                        <p className="text-sm text-zinc-500">{user.firstName}</p>
+                                                    </td>
+                                                    <td className="p-4 text-emerald-400 font-medium">{user.balance.toFixed(0)} ₽</td>
+                                                    <td className="p-4">{user.clipsCount}</td>
+                                                    <td className="p-4">{user.campaignsCount}</td>
+                                                    <td className="p-4"><ChevronRight size={16} className="text-zinc-500" /></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -591,7 +593,7 @@ function AdminPanel() {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-4 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                     <div className="bg-zinc-800/50 rounded-xl p-4">
                                         <p className="text-zinc-500 text-sm">Всего заработал</p>
                                         <p className="text-xl font-bold text-white">{selectedUser.stats.totalEarned.toFixed(0)} ₽</p>
@@ -675,6 +677,35 @@ function AdminPanel() {
                     )}
                 </main>
             </div>
+
+            {/* Mobile Bottom Tabs */}
+            <nav className="fixed bottom-0 left-0 right-0 md:hidden bg-[#0f0f0f]/95 backdrop-blur-xl border-t border-white/10 z-50">
+                <div className="flex justify-around items-center h-16 px-2">
+                    {[
+                        { id: 'dashboard', icon: LayoutDashboard, label: 'Дашборд' },
+                        { id: 'clips', icon: Clock, label: 'Модерация', badge: stats?.pendingClips },
+                        { id: 'users', icon: Users, label: 'Юзеры' },
+                        { id: 'offers', icon: Film, label: 'Офферы' },
+                    ].map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id as any)}
+                            className={`relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all ${activeTab === item.id
+                                ? 'text-blue-400'
+                                : 'text-zinc-500'
+                                }`}
+                        >
+                            <item.icon size={20} />
+                            <span className="text-[10px] font-medium">{item.label}</span>
+                            {item.badge !== undefined && item.badge > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
+                                    {item.badge}
+                                </span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </nav>
 
             {/* Approve Modal */}
             {approveModal && (
