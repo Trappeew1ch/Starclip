@@ -1,0 +1,186 @@
+import TelegramBot from 'node-telegram-bot-api';
+import { prisma } from './index.js';
+
+let bot: TelegramBot | null = null;
+
+export function initBot() {
+    const token = process.env.BOT_TOKEN;
+    if (!token) {
+        console.error('BOT_TOKEN is not set');
+        return;
+    }
+
+    bot = new TelegramBot(token, { polling: true });
+
+    const webAppUrl = process.env.WEBAPP_URL || 'http://localhost:5173';
+    const isDev = process.env.NODE_ENV === 'development' || webAppUrl.startsWith('http://localhost');
+
+    // Set up Menu Button for Mini App (only in production with HTTPS)
+    if (!isDev && webAppUrl.startsWith('https://')) {
+        bot.setChatMenuButton({
+            menu_button: {
+                type: 'web_app',
+                text: '🎬 Открыть',
+                web_app: { url: webAppUrl }
+            }
+        }).then(() => {
+            console.log('✅ Menu button set to Mini App');
+        }).catch((err) => {
+            console.error('Failed to set menu button:', err.message);
+        });
+    }
+
+    // /start command
+    bot.onText(/\/start/, async (msg) => {
+        const chatId = msg.chat.id;
+        const user = msg.from;
+
+        if (!user) return;
+
+        try {
+            // Create or update user in database
+            const dbUser = await prisma.user.upsert({
+                where: { telegramId: BigInt(user.id) },
+                update: {
+                    username: user.username,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                },
+                create: {
+                    telegramId: BigInt(user.id),
+                    username: user.username,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                }
+            });
+
+            console.log(`User registered/updated: @${user.username || user.id} (ID: ${user.id})`);
+
+            if (isDev) {
+                // Development mode - show info about how to test
+                await bot!.sendMessage(chatId,
+                    `👋 Привет, ${user.first_name}!\n\n` +
+                    `Добро пожаловать в *StarClip*!\n\n` +
+                    `🔧 *Режим разработки*\n\n` +
+                    `Твой Telegram ID: \`${user.id}\`\n\n` +
+                    `Для тестирования:\n` +
+                    `1. Открой ${webAppUrl} в браузере\n` +
+                    `2. В DevTools → Console введи:\n` +
+                    `\`localStorage.setItem('dev_telegram_id', '${user.id}')\`\n` +
+                    `3. Перезагрузи страницу\n\n` +
+                    `Теперь ты будешь авторизован под своим аккаунтом!`,
+                    { parse_mode: 'Markdown' }
+                );
+            } else {
+                // Production mode - show Mini App button
+                await bot!.sendMessage(chatId,
+                    `👋 Привет, ${user.first_name}!\n\n` +
+                    `Добро пожаловать в *StarClip* — платформу для заработка на клипах блогеров!\n\n` +
+                    `💰 Создавай нарезки популярных стримеров и ютуберов\n` +
+                    `📈 Получай оплату за просмотры\n` +
+                    `🚀 Выводи заработанное на карту\n\n` +
+                    `Твой баланс: *${dbUser.balance.toFixed(2)} ₽*\n\n` +
+                    `Нажми кнопку ниже, чтобы начать!`,
+                    {
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '🎬 Открыть StarClip', web_app: { url: webAppUrl } }
+                            ]]
+                        }
+                    }
+                );
+            }
+        } catch (error) {
+            console.error('Start command error:', error);
+            await bot!.sendMessage(chatId,
+                `👋 Привет! Добро пожаловать в StarClip.\n\n` +
+                `⚠️ Произошла ошибка. Попробуйте позже.`
+            );
+        }
+    });
+
+    // /balance command  
+    bot.onText(/\/balance/, async (msg) => {
+        const user = await prisma.user.findUnique({
+            where: { telegramId: BigInt(msg.from!.id) }
+        });
+
+        if (!user) {
+            await bot!.sendMessage(msg.chat.id, 'Сначала запустите бота командой /start');
+            return;
+        }
+
+        await bot!.sendMessage(msg.chat.id,
+            `💰 *Ваш баланс:* ${user.balance.toFixed(2)} ₽`,
+            { parse_mode: 'Markdown' }
+        );
+    });
+
+    // /help command
+    bot.onText(/\/help/, async (msg) => {
+        await bot!.sendMessage(msg.chat.id,
+            `📖 *Как это работает:*\n\n` +
+            `1️⃣ Выберите оффер блогера\n` +
+            `2️⃣ Создайте клип-нарезку\n` +
+            `3️⃣ Загрузите ссылку на видео\n` +
+            `4️⃣ Дождитесь одобрения\n` +
+            `5️⃣ Набирайте просмотры и зарабатывайте!\n\n` +
+            `❓ Вопросы? Напишите @${process.env.SUPPORT_USERNAME || 'support'}`,
+            { parse_mode: 'Markdown' }
+        );
+    });
+
+    console.log('Telegram bot initialized');
+}
+
+// Send notification to user
+export async function sendNotification(telegramId: bigint, message: string, keyboard?: TelegramBot.InlineKeyboardMarkup) {
+    if (!bot) return;
+
+    try {
+        await bot.sendMessage(Number(telegramId), message, {
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+        });
+    } catch (error) {
+        console.error('Failed to send notification:', error);
+    }
+}
+
+// Notify clip approved
+export async function notifyClipApproved(userId: number, clipTitle: string, earnedAmount: number) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+
+    await sendNotification(
+        user.telegramId,
+        `✅ *Клип одобрен!*\n\n` +
+        `📹 "${clipTitle}"\n` +
+        `💰 Начислено: +${earnedAmount.toFixed(2)} ₽\n\n` +
+        `Продолжайте набирать просмотры для увеличения заработка!`
+    );
+}
+
+// Notify clip rejected
+export async function notifyClipRejected(userId: number, clipTitle: string, reason: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return;
+
+    const supportUsername = process.env.SUPPORT_USERNAME || 'support';
+
+    await sendNotification(
+        user.telegramId,
+        `❌ *Клип отклонён*\n\n` +
+        `📹 "${clipTitle}"\n` +
+        `📝 Причина: ${reason}\n\n` +
+        `Не согласны? Напишите в поддержку.`,
+        {
+            inline_keyboard: [[
+                { text: '💬 Оспорить', url: `https://t.me/${supportUsername}` }
+            ]]
+        }
+    );
+}
+
+export { bot };

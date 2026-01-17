@@ -1,0 +1,60 @@
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import { initBot } from './bot.js';
+import authRoutes from './routes/auth.js';
+import offersRoutes from './routes/offers.js';
+import clipsRoutes from './routes/clips.js';
+import usersRoutes from './routes/users.js';
+import adminRoutes from './routes/admin.js';
+import campaignsRoutes from './routes/campaigns.js';
+
+export const prisma = new PrismaClient();
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:5173', process.env.WEBAPP_URL || ''].filter(Boolean),
+    credentials: true
+}));
+app.use(express.json());
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/offers', offersRoutes);
+app.use('/api/clips', clipsRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/campaigns', campaignsRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Start server
+async function main() {
+    try {
+        await prisma.$connect();
+        console.log('✅ Database connected');
+
+        // Initialize Telegram bot
+        if (process.env.BOT_TOKEN) {
+            initBot();
+            console.log('✅ Telegram bot started');
+        } else {
+            console.log('⚠️ BOT_TOKEN not set, skipping bot initialization');
+        }
+
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+}
+
+main();
