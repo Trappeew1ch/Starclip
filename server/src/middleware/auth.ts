@@ -131,10 +131,27 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 }
 
-// Admin middleware
+// Admin middleware - checks both database isAdmin and ADMIN_IDS env
 export async function adminMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
-    if (!req.user?.isAdmin) {
+    const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim());
+    const userTelegramId = req.user?.telegramId?.toString();
+
+    // Check if user is admin in database OR in ADMIN_IDS env
+    const isAdminInEnv = userTelegramId && adminIds.includes(userTelegramId);
+    const isAdminInDb = req.user?.isAdmin;
+
+    if (!isAdminInDb && !isAdminInEnv) {
         return res.status(403).json({ error: 'Admin access required' });
     }
+
+    // If admin via env but not in DB, update DB
+    if (isAdminInEnv && !isAdminInDb && req.user) {
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { isAdmin: true }
+        });
+        req.user.isAdmin = true;
+    }
+
     next();
 }
