@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api';
+// Use relative URL so it works both locally and in production
+const API_URL = '/api';
 
 // Get admin auth from localStorage
 function getAdminAuth(): { telegramId: string; token: string } | null {
@@ -389,8 +390,8 @@ function AdminPanel() {
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id as any)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
-                                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                        : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                    : 'text-zinc-400 hover:bg-white/5 hover:text-white'
                                     }`}
                             >
                                 <item.icon size={18} />
@@ -617,7 +618,7 @@ function AdminPanel() {
                                     {selectedUser.clips.map((clip: any) => (
                                         <div key={clip.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-lg">
                                             <div className={`w-2 h-2 rounded-full ${clip.status === 'approved' ? 'bg-emerald-500' :
-                                                    clip.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                                                clip.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
                                                 }`}></div>
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium">{clip.offerName}</p>
