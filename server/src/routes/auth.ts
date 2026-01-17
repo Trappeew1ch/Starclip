@@ -21,8 +21,12 @@ router.post('/validate', async (req, res) => {
         const userData = JSON.parse(validation.data.user || '{}');
         const telegramId = BigInt(userData.id);
 
+        // Check if user is in ADMIN_IDS
+        const adminIds = (process.env.ADMIN_IDS || '').split(',').map(id => id.trim());
+        const shouldBeAdmin = adminIds.includes(userData.id.toString());
+
         // Upsert user
-        const user = await prisma.user.upsert({
+        let user = await prisma.user.upsert({
             where: { telegramId },
             update: {
                 username: userData.username,
@@ -35,9 +39,18 @@ router.post('/validate', async (req, res) => {
                 username: userData.username,
                 firstName: userData.first_name,
                 lastName: userData.last_name,
-                photoUrl: userData.photo_url
+                photoUrl: userData.photo_url,
+                isAdmin: shouldBeAdmin
             }
         });
+
+        // If user should be admin but isn't marked as such, update
+        if (shouldBeAdmin && !user.isAdmin) {
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { isAdmin: true }
+            });
+        }
 
         res.json({
             user: {
