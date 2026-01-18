@@ -64,15 +64,15 @@ export const EarningsView: React.FC = () => {
     }
 
     return (
-        <div className="w-full flex flex-col items-center pt-8 px-2 animate-in fade-in duration-500 relative min-h-[80vh]">
+        <div className="w-full flex flex-col items-center pt-8 px-2 animate-in fade-in duration-500 relative min-h-[80vh] overflow-x-hidden">
 
             {/* --- LIGHTING SETUP --- */}
-            <div className="absolute top-16 -left-4 w-[60px] h-[160px] bg-blue-500/80 blur-[60px] pointer-events-none z-0"></div>
-            <div className="absolute top-16 -right-4 w-[60px] h-[160px] bg-white/60 blur-[60px] pointer-events-none z-0"></div>
+            <div className="absolute top-16 left-0 w-[60px] h-[160px] bg-blue-500/80 blur-[60px] pointer-events-none z-0"></div>
+            <div className="absolute top-16 right-0 w-[60px] h-[160px] bg-white/60 blur-[60px] pointer-events-none z-0"></div>
             <div className="absolute top-[380px] right-[52%] w-20 h-20 bg-blue-600 blur-[40px] opacity-40 rounded-full pointer-events-none z-0"></div>
             <div className="absolute top-[380px] left-[52%] w-20 h-20 bg-white blur-[40px] opacity-30 rounded-full pointer-events-none z-0"></div>
-            <div className="fixed -bottom-10 -left-20 w-[150px] h-[200px] bg-blue-600/30 blur-[80px] pointer-events-none z-0"></div>
-            <div className="fixed -bottom-10 -right-20 w-[150px] h-[200px] bg-white/10 blur-[80px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-0 left-0 w-[150px] h-[200px] bg-blue-600/30 blur-[80px] pointer-events-none z-0"></div>
+            <div className="fixed bottom-0 right-0 w-[150px] h-[200px] bg-white/10 blur-[80px] pointer-events-none z-0"></div>
 
             {/* 4. BALANCE SECTION */}
             <div className="flex flex-col items-center w-full mb-10 relative z-10">
