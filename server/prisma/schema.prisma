@@ -84,15 +84,23 @@ model Clip {
 }
 
 model SocialAccount {
-  id          Int     @id @default(autoincrement())
-  userId      Int
-  platform    String // 'youtube' | 'tiktok' | 'instagram'
-  accountName String
-  profileUrl  String?
-  followers   Int     @default(0)
-  isConnected Boolean @default(true)
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  platform       String // 'youtube' | 'tiktok' | 'instagram'
+  platformUserId String?   // User ID on the platform
+  accountName    String
+  profileUrl     String?
+  followers      Int       @default(0)
+  isConnected    Boolean   @default(true)
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
 }
 
 model Transaction {

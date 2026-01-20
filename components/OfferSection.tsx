@@ -31,8 +31,8 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                 <button
                     onClick={() => setActiveTab(CreatorType.STREAMER)}
                     className={`flex-1 py-2 text-sm font-medium rounded-full transition-colors relative ${activeTab === CreatorType.STREAMER
-                            ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                            : 'text-zinc-400 hover:text-zinc-200'
+                        ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                        : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                 >
                     Стримеры
@@ -40,8 +40,8 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                 <button
                     onClick={() => setActiveTab(CreatorType.YOUTUBER)}
                     className={`flex-1 py-2 text-sm font-medium rounded-full transition-colors relative ${activeTab === CreatorType.YOUTUBER
-                            ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                            : 'text-zinc-400 hover:text-zinc-200'
+                        ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                        : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                 >
                     Ютуберы
@@ -64,8 +64,8 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
 
                         <div
                             className={`absolute left-0 top-1/2 -translate-y-1/2 w-[35%] h-[16px] blur-[12px] opacity-80 z-20 pointer-events-none bg-gradient-to-r ${offer.glowColor === 'blue'
-                                    ? 'from-sky-500 to-transparent'
-                                    : 'from-yellow-500 to-transparent'
+                                ? 'from-sky-500 to-transparent'
+                                : 'from-yellow-500 to-transparent'
                                 }`}
                         ></div>
 
@@ -78,7 +78,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                         <div className="flex flex-col relative">
 
                             {/* Image Area */}
-                            <div className="relative z-30 w-full aspect-[2.61/1] rounded-[2rem] overflow-hidden shadow-2xl bg-[#09090b]">
+                            <div className="relative z-30 w-full aspect-[2.61/1] rounded-2xl overflow-hidden shadow-2xl bg-[#09090b]">
                                 <img
                                     src={offer.imageUrl}
                                     alt={offer.name}
@@ -88,7 +88,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                             </div>
 
                             {/* Info Strip */}
-                            <div className="relative z-10 -mt-8 pt-9 pb-4 px-5 bg-[#18181b] border border-white/5 rounded-b-[2rem] shadow-lg">
+                            <div className="relative z-10 -mt-8 pt-9 pb-4 px-5 bg-[#18181b] border border-white/5 rounded-b-2xl shadow-lg">
 
                                 {/* Video Title */}
                                 <div className="mb-3">
@@ -116,8 +116,8 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                                         <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                             <div
                                                 className={`h-full rounded-full ${offer.glowColor === 'blue'
-                                                        ? 'bg-gradient-to-r from-blue-600 to-cyan-400'
-                                                        : 'bg-gradient-to-r from-yellow-600 to-amber-400'
+                                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-400'
+                                                    : 'bg-gradient-to-r from-yellow-600 to-amber-400'
                                                     }`}
                                                 style={{ width: `${offer.paidOutPercentage || 0}%` }}
                                             ></div>
@@ -133,8 +133,8 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                                             CPM
                                         </span>
                                         <span className={`text-sm font-bold ${offer.glowColor === 'blue'
-                                                ? 'text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]'
-                                                : 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.5)]'
+                                            ? 'text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]'
+                                            : 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.5)]'
                                             }`}>
                                             {typeof offer.cpmRate === 'number'
                                                 ? `${offer.cpmRate} ₽`

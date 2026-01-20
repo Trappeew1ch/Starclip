@@ -8,6 +8,8 @@ import clipsRoutes from './routes/clips.js';
 import usersRoutes from './routes/users.js';
 import adminRoutes from './routes/admin.js';
 import campaignsRoutes from './routes/campaigns.js';
+import tiktokRoutes from './routes/tiktok.js';
+import { startStatsUpdateScheduler } from './jobs/updateVideoStats.js';
 
 export const prisma = new PrismaClient();
 
@@ -28,6 +30,7 @@ app.use('/api/clips', clipsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/campaigns', campaignsRoutes);
+app.use('/api/tiktok', tiktokRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -51,6 +54,11 @@ async function main() {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
         });
+
+        // Start video stats update scheduler
+        if (process.env.NODE_ENV === 'production') {
+            startStatsUpdateScheduler();
+        }
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);
