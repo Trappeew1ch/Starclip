@@ -176,7 +176,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
             <div className="fixed top-20 -right-10 w-[100px] h-[250px] bg-blue-600/50 blur-[80px] pointer-events-none z-0"></div>
             <div className="fixed top-[400px] -left-10 w-[100px] h-[250px] bg-blue-600/40 blur-[80px] pointer-events-none z-0"></div>
 
-            <h1 className="text-2xl font-bold text-white mb-5 drop-shadow-lg relative z-10">Мои кампании</h1>
+            <h1 className="text-2xl font-bold text-white mb-5 drop-shadow-lg relative z-10 text-center">Мои кампании</h1>
 
             {/* 1. ACTIVE CAMPAIGNS */}
             {campaigns.length === 0 ? (

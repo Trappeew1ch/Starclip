@@ -358,7 +358,7 @@ function AdminPanel() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0f0f0f] text-white">
+        <div className="min-h-screen bg-[#0f0f0f] text-white overflow-x-hidden">
             {/* Header */}
             <header
                 className="border-b border-white/10 bg-[#0f0f0f]/80 backdrop-blur-xl sticky top-0 z-50"
