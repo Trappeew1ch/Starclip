@@ -171,7 +171,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     }
 
     return (
-        <div className="w-full flex flex-col pt-6 px-4 pb-24 animate-in fade-in duration-500 relative min-h-screen">
+        <div className="w-full flex flex-col pt-12 px-4 pb-24 animate-in fade-in duration-500 relative min-h-screen">
 
             <div className="fixed top-20 -right-10 w-[100px] h-[250px] bg-blue-600/50 blur-[80px] pointer-events-none z-0"></div>
             <div className="fixed top-[400px] -left-10 w-[100px] h-[250px] bg-blue-600/40 blur-[80px] pointer-events-none z-0"></div>

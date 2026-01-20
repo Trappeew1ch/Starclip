@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/starclip
+            
+            # Pull latest changes
+            git pull origin main
+            
+            # Install dependencies if needed
+            npm install --production
+            
+            # Build frontend
+            npm run build
+            
+            # Server build
+            cd server
+            npm install --production
+            npx prisma generate
+            npm run build
+            cd ..
+            
+            # Restart PM2
+            pm2 restart starclip-api || pm2 start server/dist/index.js --name starclip-api
+            
+            echo "✅ Deployment complete!"

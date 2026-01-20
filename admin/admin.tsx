@@ -362,7 +362,7 @@ function AdminPanel() {
             {/* Header */}
             <header
                 className="border-b border-white/10 bg-[#0f0f0f]/80 backdrop-blur-xl sticky top-0 z-50"
-                style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 16px))' }}
+                style={{ paddingTop: 'max(32px, env(safe-area-inset-top, 32px))' }}
             >
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
