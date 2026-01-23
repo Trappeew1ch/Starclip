@@ -7,6 +7,8 @@ import { BottomNav } from './components/BottomNav';
 import { EarningsView } from './components/EarningsView';
 import { ClipsView } from './components/ClipsView';
 import { OfferDetailsView } from './components/OfferDetailsView';
+import { TermsView } from './components/TermsView';
+import { PrivacyView } from './components/PrivacyView';
 import { BannerSlide, ViewType } from './types';
 
 const banners: BannerSlide[] = [
@@ -26,10 +28,15 @@ function AppContent() {
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
 
-  // Load offers on mount
+  // Load offers on mount and check URL
   useEffect(() => {
     loadOffers();
     loadCampaigns();
+
+    // Check URL for direct navigation
+    const path = window.location.pathname;
+    if (path === '/terms') setCurrentView('terms');
+    else if (path === '/privacy') setCurrentView('privacy');
   }, []);
 
   const handleOfferClick = (offer: any) => {
@@ -73,6 +80,10 @@ function AppContent() {
       case 'offer-details':
         if (!selectedOffer) return null;
         return <OfferDetailsView offer={selectedOffer} onBack={handleBack} onJoin={() => handleJoinCampaign(selectedOffer)} />;
+      case 'terms':
+        return <TermsView onBack={handleBack} />;
+      case 'privacy':
+        return <PrivacyView onBack={handleBack} />;
       default:
         return null;
     }
@@ -93,7 +104,7 @@ function AppContent() {
 
         {renderContent()}
 
-        {currentView !== 'offer-details' && (
+        {!['offer-details', 'terms', 'privacy'].includes(currentView) && (
           <BottomNav currentView={currentView} onNavigate={setCurrentView} isAdmin={user?.isAdmin} />
         )}
       </div>
