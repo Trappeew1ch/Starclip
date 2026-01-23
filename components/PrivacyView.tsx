@@ -7,7 +7,10 @@ interface PrivacyViewProps {
 
 export const PrivacyView: React.FC<PrivacyViewProps> = ({ onBack }) => {
     return (
-        <div className="w-full min-h-screen bg-[#09090b] text-white pt-6 px-4 pb-24 animate-in fade-in duration-300 relative z-20">
+        <div
+            className="w-full min-h-screen bg-[#09090b] text-white px-4 pb-24 animate-in fade-in duration-300 relative z-20"
+            style={{ paddingTop: 'max(24px, env(safe-area-inset-top, 24px))' }}
+        >
             <button
                 onClick={onBack}
                 className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
