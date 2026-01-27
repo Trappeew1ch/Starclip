@@ -15,12 +15,13 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
         <div className="w-full flex flex-col pt-4 pb-24 animate-in slide-in-from-right duration-300 relative min-h-screen bg-[#09090b] overflow-hidden">
 
             {/* Navigation Header */}
-            <div className="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-white/5">
-                <button onClick={onBack} className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors">
+            {/* Navigation Header - Pushed down for Telegram UI */}
+            <div className="sticky top-0 z-50 bg-[#09090b]/90 backdrop-blur-md px-4 pt-12 pb-4 flex items-center justify-between border-b border-white/5 shadow-md">
+                <button onClick={onBack} className="p-2 -ml-2 text-white hover:text-zinc-300 transition-colors bg-white/5 rounded-full">
                     <ArrowLeft size={24} />
                 </button>
-                <span className="font-semibold text-white">Кампания</span>
-                <button className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors">
+                <span className="font-semibold text-white pt-2">Кампания</span>
+                <button className="p-2 -mr-2 text-white hover:text-zinc-300 transition-colors bg-white/5 rounded-full">
                     <Share2 size={20} />
                 </button>
             </div>
