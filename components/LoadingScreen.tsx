@@ -12,7 +12,7 @@ export const LoadingScreen: React.FC = () => {
             }}
         >
             {/* Loading spinner positioned higher */}
-            <div className="absolute" style={{ top: '45%' }}>
+            <div className="absolute" style={{ top: '53%' }}>
                 <div className="relative">
                     {/* Outer glow */}
                     <div className="absolute inset-0 w-12 h-12 bg-blue-500/30 rounded-full blur-xl animate-pulse"></div>
