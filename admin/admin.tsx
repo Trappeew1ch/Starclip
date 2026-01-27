@@ -51,6 +51,43 @@ async function adminRequest<T>(endpoint: string, options: RequestInit = {}): Pro
     return response.json();
 }
 
+// Upload file as base64
+async function uploadFile(file: File): Promise<string> {
+    const auth = getAdminAuth();
+    if (!auth) throw new Error('Not authenticated');
+
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Telegram-Id': auth.telegramId
+                    },
+                    body: JSON.stringify({
+                        filename: file.name,
+                        data: reader.result,
+                        mimeType: file.type
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const result = await response.json();
+                resolve(result.url);
+            } catch (err) {
+                reject(err);
+            }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
 // Types
 interface DashboardStats {
     totalUsers: number;
@@ -198,6 +235,9 @@ function AdminPanel() {
         assetsLink: '',
         daysLeft: '30'
     });
+    const [bannerFile, setBannerFile] = useState<File | null>(null);
+    const [bannerPreview, setBannerPreview] = useState<string>('');
+    const [isUploading, setIsUploading] = useState(false);
 
     // Check auth on mount
     useEffect(() => {
@@ -289,10 +329,19 @@ function AdminPanel() {
     const handleCreateOffer = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsUploading(true);
+
+            // Upload banner file if selected
+            let bannerUrl = offerForm.bannerUrl;
+            if (bannerFile) {
+                bannerUrl = await uploadFile(bannerFile);
+            }
+
             await adminRequest('/admin/offers', {
                 method: 'POST',
                 body: JSON.stringify({
                     ...offerForm,
+                    bannerUrl,
                     totalBudget: parseFloat(offerForm.totalBudget),
                     cpmRate: parseFloat(offerForm.cpmRate),
                     daysLeft: parseInt(offerForm.daysLeft),
@@ -305,9 +354,13 @@ function AdminPanel() {
                 totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
                 description: '', requirements: '', assetsLink: '', daysLeft: '30'
             });
+            setBannerFile(null);
+            setBannerPreview('');
             loadData();
         } catch (error: any) {
             alert(error.message || 'Ошибка при создании оффера');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -898,18 +951,45 @@ function AdminPanel() {
                                 </div>
                             </div>
 
-                            {/* Banner URL */}
+                            {/* Banner Upload */}
                             <div>
                                 <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
-                                    <Image size={14} />
-                                    URL баннера (для карточки оффера)
+                                    <Upload size={14} />
+                                    Баннер оффера (загрузить файл)
                                 </label>
+                                <div className="flex gap-3">
+                                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-zinc-800 border border-dashed border-white/10 rounded-lg text-zinc-400 hover:border-blue-500/50 hover:text-blue-400 cursor-pointer transition-colors">
+                                        <Upload size={18} />
+                                        <span>{bannerFile ? bannerFile.name : 'Выбрать файл...'}</span>
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    setBannerFile(file);
+                                                    setBannerPreview(URL.createObjectURL(file));
+                                                    setOfferForm({ ...offerForm, bannerUrl: '' });
+                                                }
+                                            }}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                    {bannerPreview && (
+                                        <img src={bannerPreview} alt="Preview" className="h-12 w-24 object-cover rounded-lg border border-white/10" />
+                                    )}
+                                </div>
+                                <p className="text-xs text-zinc-600 mt-1">Или укажите URL:</p>
                                 <input
                                     type="url"
                                     value={offerForm.bannerUrl}
-                                    onChange={(e) => setOfferForm({ ...offerForm, bannerUrl: e.target.value })}
+                                    onChange={(e) => {
+                                        setOfferForm({ ...offerForm, bannerUrl: e.target.value });
+                                        setBannerFile(null);
+                                        setBannerPreview('');
+                                    }}
                                     placeholder="https://..."
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                    className="w-full mt-1 px-4 py-2 bg-zinc-800/50 border border-white/5 rounded-lg text-white text-sm"
                                 />
                             </div>
 
@@ -947,11 +1027,18 @@ function AdminPanel() {
                             </div>
 
                             <div className="flex gap-3 pt-4">
-                                <button type="button" onClick={() => setShowOfferForm(false)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium">
+                                <button type="button" onClick={() => setShowOfferForm(false)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium" disabled={isUploading}>
                                     Отмена
                                 </button>
-                                <button type="submit" className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium">
-                                    Создать оффер
+                                <button type="submit" disabled={isUploading} className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-700 disabled:cursor-wait rounded-lg font-medium flex items-center justify-center gap-2">
+                                    {isUploading ? (
+                                        <>
+                                            <RefreshCw className="animate-spin" size={16} />
+                                            Загрузка...
+                                        </>
+                                    ) : (
+                                        'Создать оффер'
+                                    )}
                                 </button>
                             </div>
                         </form>
