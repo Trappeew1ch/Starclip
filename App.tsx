@@ -9,6 +9,7 @@ import { ClipsView } from './components/ClipsView';
 import { OfferDetailsView } from './components/OfferDetailsView';
 import { TermsView } from './components/TermsView';
 import { PrivacyView } from './components/PrivacyView';
+import { LoadingScreen } from './components/LoadingScreen';
 import { BannerSlide, ViewType } from './types';
 
 const banners: BannerSlide[] = [
@@ -27,6 +28,7 @@ function AppContent() {
 
   const [currentView, setCurrentView] = useState<ViewType>('home');
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
+  const [appReady, setAppReady] = useState(false);
 
   // Load offers on mount and check URL
   useEffect(() => {
@@ -38,6 +40,15 @@ function AppContent() {
     if (path === '/terms') setCurrentView('terms');
     else if (path === '/privacy') setCurrentView('privacy');
   }, []);
+
+  // Show loading screen until data is loaded
+  useEffect(() => {
+    if (!isLoading) {
+      // Small delay for smooth transition
+      const timer = setTimeout(() => setAppReady(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   const handleOfferClick = (offer: any) => {
     setSelectedOffer(offer);
@@ -56,14 +67,12 @@ function AppContent() {
     }
   };
 
+  // Show loading screen while app initializes
+  if (!appReady) {
+    return <LoadingScreen />;
+  }
+
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      );
-    }
 
     switch (currentView) {
       case 'home':

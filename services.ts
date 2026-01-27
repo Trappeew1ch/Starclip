@@ -157,11 +157,19 @@ export const adminApi = {
         apiRequest<any>(`/admin/offers/${id}/toggle`, { method: 'POST' })
 };
 
+// Referrals API
+export const referralsApi = {
+    getInfo: () => apiRequest<any>('/referrals'),
+    getList: () => apiRequest<any[]>('/referrals/list')
+};
+
 export default {
     auth: authApi,
     offers: offersApi,
     campaigns: campaignsApi,
     clips: clipsApi,
     users: usersApi,
-    admin: adminApi
+    admin: adminApi,
+    referrals: referralsApi
 };
+

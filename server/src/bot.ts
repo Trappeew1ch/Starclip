@@ -1,7 +1,13 @@
 import TelegramBot from 'node-telegram-bot-api';
+import crypto from 'crypto';
 import { prisma } from './index.js';
 
 let bot: TelegramBot | null = null;
+
+// Generate a unique referral code
+function generateReferralCode(): string {
+    return crypto.randomBytes(4).toString('hex').toUpperCase();
+}
 
 export function initBot() {
     const token = process.env.BOT_TOKEN;
@@ -33,29 +39,72 @@ export function initBot() {
         });
     }
 
-    // /start command
-    bot.onText(/\/start/, async (msg) => {
+    // /start command with optional referral code
+    bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
         const chatId = msg.chat.id;
         const user = msg.from;
+        const startParam = match?.[1]; // e.g., "ref_ABCD1234"
 
         if (!user) return;
 
         try {
-            // Create or update user in database
-            const dbUser = await prisma.user.upsert({
-                where: { telegramId: BigInt(user.id) },
-                update: {
-                    username: user.username,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
-                },
-                create: {
-                    telegramId: BigInt(user.id),
-                    username: user.username,
-                    firstName: user.first_name,
-                    lastName: user.last_name,
+            // Check if this is a referral link
+            let referrerId: number | null = null;
+            if (startParam && startParam.startsWith('ref_')) {
+                const referralCode = startParam.replace('ref_', '');
+                const referrer = await prisma.user.findUnique({
+                    where: { referralCode }
+                });
+                if (referrer && referrer.telegramId !== BigInt(user.id)) {
+                    referrerId = referrer.id;
+                    console.log(`User ${user.id} referred by ${referrer.id} (code: ${referralCode})`);
                 }
+            }
+
+            // Check if user already exists
+            const existingUser = await prisma.user.findUnique({
+                where: { telegramId: BigInt(user.id) }
             });
+
+            let dbUser;
+            if (existingUser) {
+                // Update existing user
+                dbUser = await prisma.user.update({
+                    where: { telegramId: BigInt(user.id) },
+                    data: {
+                        username: user.username,
+                        firstName: user.first_name,
+                        lastName: user.last_name,
+                    }
+                });
+            } else {
+                // Create new user with optional referrer
+                const referralCode = generateReferralCode();
+                dbUser = await prisma.user.create({
+                    data: {
+                        telegramId: BigInt(user.id),
+                        username: user.username,
+                        firstName: user.first_name,
+                        lastName: user.last_name,
+                        referralCode,
+                        referredById: referrerId,
+                        referredAt: referrerId ? new Date() : null
+                    }
+                });
+
+                // Notify the referrer about new referral
+                if (referrerId) {
+                    const referrer = await prisma.user.findUnique({ where: { id: referrerId } });
+                    if (referrer) {
+                        await bot!.sendMessage(Number(referrer.telegramId),
+                            `🎉 *Новый реферал!*\n\n` +
+                            `${user.first_name || user.username || 'Пользователь'} присоединился по вашей ссылке!\n\n` +
+                            `Теперь вы будете получать 10% с его заработка.`,
+                            { parse_mode: 'Markdown' }
+                        ).catch(err => console.error('Failed to notify referrer:', err));
+                    }
+                }
+            }
 
             console.log(`User registered/updated: @${user.username || user.id} (ID: ${user.id})`);
 

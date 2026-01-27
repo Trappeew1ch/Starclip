@@ -27,10 +27,10 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
             </h2>
 
             {/* Tabs - Pill Shape & Reduced Height */}
-            <div className="flex p-1 glass-panel rounded-full mb-5 mx-1">
+            <div className="flex p-1 glass-panel rounded-xl mb-5 mx-1">
                 <button
                     onClick={() => setActiveTab(CreatorType.STREAMER)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-full transition-colors relative ${activeTab === CreatorType.STREAMER
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.STREAMER
                         ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
                         : 'text-zinc-400 hover:text-zinc-200'
                         }`}
@@ -39,7 +39,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                 </button>
                 <button
                     onClick={() => setActiveTab(CreatorType.YOUTUBER)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-full transition-colors relative ${activeTab === CreatorType.YOUTUBER
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.YOUTUBER
                         ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
                         : 'text-zinc-400 hover:text-zinc-200'
                         }`}
@@ -58,20 +58,15 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                     >
                         {/* THE BEAM GLOW */}
                         <div
-                            className={`absolute left-0 top-1/2 -translate-y-1/2 w-[40%] h-[120px] blur-[50px] opacity-50 z-20 pointer-events-none transition-opacity duration-500 group-hover:opacity-70 ${offer.glowColor === 'blue' ? 'bg-sky-600' : 'bg-yellow-600'
-                                }`}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[40%] h-[120px] blur-[50px] opacity-50 z-20 pointer-events-none transition-opacity duration-500 group-hover:opacity-70 bg-sky-600"
                         ></div>
 
                         <div
-                            className={`absolute left-0 top-1/2 -translate-y-1/2 w-[35%] h-[16px] blur-[12px] opacity-80 z-20 pointer-events-none bg-gradient-to-r ${offer.glowColor === 'blue'
-                                ? 'from-sky-500 to-transparent'
-                                : 'from-yellow-500 to-transparent'
-                                }`}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 w-[35%] h-[16px] blur-[12px] opacity-80 z-20 pointer-events-none bg-gradient-to-r from-sky-500 to-transparent"
                         ></div>
 
                         <div
-                            className={`absolute -left-5 top-[25%] -translate-y-1/2 w-[4px] h-[25px] blur-[6px] opacity-100 z-40 pointer-events-none transition-all duration-500 group-hover:h-[40px] group-hover:blur-[10px] ${offer.glowColor === 'blue' ? 'bg-sky-300' : 'bg-yellow-300'
-                                }`}
+                            className="absolute -left-5 top-[25%] -translate-y-1/2 w-[4px] h-[25px] blur-[6px] opacity-100 z-40 pointer-events-none transition-all duration-500 group-hover:h-[40px] group-hover:blur-[10px] bg-sky-300"
                         ></div>
 
 
@@ -115,10 +110,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                                     <div className="flex-1 mx-4">
                                         <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full ${offer.glowColor === 'blue'
-                                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-400'
-                                                    : 'bg-gradient-to-r from-yellow-600 to-amber-400'
-                                                    }`}
+                                                className="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400"
                                                 style={{ width: `${offer.paidOutPercentage || 0}%` }}
                                             ></div>
                                         </div>
@@ -132,10 +124,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                                         <span className="text-[10px] text-zinc-500 font-medium">
                                             CPM
                                         </span>
-                                        <span className={`text-sm font-bold ${offer.glowColor === 'blue'
-                                            ? 'text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]'
-                                            : 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.5)]'
-                                            }`}>
+                                        <span className="text-sm font-bold text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
                                             {typeof offer.cpmRate === 'number'
                                                 ? `${offer.cpmRate} ₽`
                                                 : offer.cpm || 'N/A'}

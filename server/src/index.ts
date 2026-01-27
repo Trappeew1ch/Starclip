@@ -9,6 +9,7 @@ import usersRoutes from './routes/users.js';
 import adminRoutes from './routes/admin.js';
 import campaignsRoutes from './routes/campaigns.js';
 import tiktokRoutes from './routes/tiktok.js';
+import referralsRoutes from './routes/referrals.js';
 import { startStatsUpdateScheduler } from './jobs/updateVideoStats.js';
 
 export const prisma = new PrismaClient();
@@ -31,6 +32,7 @@ app.use('/api/users', usersRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/campaigns', campaignsRoutes);
 app.use('/api/tiktok', tiktokRoutes);
+app.use('/api/referrals', referralsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

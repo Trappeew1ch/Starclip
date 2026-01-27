@@ -171,7 +171,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     }
 
     return (
-        <div className="w-full flex flex-col pt-12 px-4 pb-24 animate-in fade-in duration-500 relative min-h-screen">
+        <div className="w-full flex flex-col pt-20 px-4 pb-24 animate-in fade-in duration-500 relative min-h-screen">
 
             <div className="fixed top-20 -right-10 w-[100px] h-[250px] bg-blue-600/50 blur-[80px] pointer-events-none z-0"></div>
             <div className="fixed top-[400px] -left-10 w-[100px] h-[250px] bg-blue-600/40 blur-[80px] pointer-events-none z-0"></div>
@@ -266,7 +266,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
 
             {/* 2. RECENT CLIPS (Accepted Only) */}
             <div className="relative z-10 mb-8 opacity-80 hover:opacity-100 transition-opacity">
-                <h2 className="text-lg font-bold text-white mb-4 ml-1">Недавние принятые</h2>
+                <h2 className="text-lg font-bold text-white mb-4 ml-1 text-center">Недавние принятые</h2>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mr-4 pr-4 snap-x">
                     {recentAcceptedVideos.length > 0 ? recentAcceptedVideos.map((clip) => (
                         <div key={clip.id} className="relative flex-shrink-0 w-[24vw] sm:w-[100px] aspect-[9/16] rounded-xl overflow-hidden snap-start shadow-lg group border-2 border-emerald-500/50">

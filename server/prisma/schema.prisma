@@ -8,17 +8,22 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  telegramId BigInt   @unique
-  username   String?
-  firstName  String?
-  lastName   String?
-  photoUrl   String?
-  balance    Float    @default(0)
-  isAdmin    Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           Int       @id @default(autoincrement())
+  telegramId   BigInt    @unique
+  username     String?
+  firstName    String?
+  lastName     String?
+  photoUrl     String?
+  balance      Float     @default(0)
+  isAdmin      Boolean   @default(false)
+  referralCode String?   @unique
+  referredById Int?
+  referredAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
+  referredBy     User?          @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals      User[]         @relation("UserReferrals")
   clips          Clip[]
   campaigns      UserCampaign[]
   socialAccounts SocialAccount[]

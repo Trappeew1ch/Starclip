@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronRight, Play } from 'lucide-react';
 import { EarningsClip } from '../types';
 import { usersApi } from '../services';
+import { ReferralSection } from './ReferralSection';
 
 interface Stats {
     balance: number;
@@ -112,8 +113,8 @@ export const EarningsView: React.FC = () => {
 
             {/* 5. STATS REDESIGN (Single Block) */}
             <div className="w-full mb-8 relative z-10">
-                <div className="flex justify-between items-center mb-4 px-2">
-                    <h2 className="text-xl font-bold text-white">Моя статистика</h2>
+                <div className="flex justify-center items-center mb-4 px-2">
+                    <h2 className="text-xl font-bold text-white text-center">Моя статистика</h2>
                 </div>
 
                 {/* Combined Stats Container */}
@@ -151,9 +152,9 @@ export const EarningsView: React.FC = () => {
             </div>
 
             {/* 6. TOP CLIPS SECTION */}
-            <div className="w-full mb-24 relative z-10">
-                <div className="flex justify-between items-center mb-4 px-2">
-                    <h2 className="text-lg font-bold text-white">Топ клипы</h2>
+            <div className="w-full mb-8 relative z-10">
+                <div className="flex justify-center items-center mb-4 px-2">
+                    <h2 className="text-lg font-bold text-white text-center">Топ клипы</h2>
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -200,6 +201,9 @@ export const EarningsView: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* 7. REFERRAL SECTION */}
+            <ReferralSection />
 
         </div>
     );
