@@ -27,6 +27,24 @@ function generateFilename(originalName: string): string {
 }
 
 // Admin can upload files
+// Debug endpoint to check status
+router.get('/debug', authMiddleware, adminMiddleware, (req, res) => {
+    try {
+        const exists = fs.existsSync(UPLOADS_DIR);
+        const files = exists ? fs.readdirSync(UPLOADS_DIR) : [];
+
+        res.json({
+            uploadsDir: UPLOADS_DIR,
+            exists,
+            fileCount: files.length,
+            files: files.slice(0, 10), // Show first 10 files
+            permissions: exists ? fs.statSync(UPLOADS_DIR).mode.toString(8) : null
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.post('/', authMiddleware, adminMiddleware, async (req: AuthRequest, res) => {
     try {
         // Check if we have raw base64 data
