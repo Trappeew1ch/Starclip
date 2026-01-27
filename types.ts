@@ -35,7 +35,7 @@ export interface BannerSlide {
   link: string;
 }
 
-export type ViewType = 'home' | 'offers' | 'earnings' | 'offer-details' | 'terms' | 'privacy';
+export type ViewType = 'home' | 'offers' | 'earnings' | 'offer-details' | 'terms' | 'privacy' | 'referral';
 
 export interface EarningsClip {
   id: string;

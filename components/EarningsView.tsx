@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Play } from 'lucide-react';
-import { EarningsClip } from '../types';
+import { ChevronRight, Play, Users } from 'lucide-react';
+import { EarningsClip, ViewType } from '../types';
 import { usersApi } from '../services';
-import { ReferralSection } from './ReferralSection';
 
 interface Stats {
     balance: number;
@@ -21,7 +20,11 @@ interface Stats {
     }>;
 }
 
-export const EarningsView: React.FC = () => {
+interface EarningsViewProps {
+    onNavigate: (view: ViewType) => void;
+}
+
+export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
     const [stats, setStats] = useState<Stats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -109,6 +112,29 @@ export const EarningsView: React.FC = () => {
                         Вывести
                     </button>
                 </div>
+            </div>
+
+            {/* REFERRAL BANNER */}
+            <div className="w-full px-4 mb-8 relative z-10 max-w-sm">
+                <button
+                    onClick={() => onNavigate('referral')}
+                    className="w-full relative group overflow-hidden rounded-2xl p-0.5"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-90 transition-opacity group-hover:opacity-100"></div>
+
+                    <div className="relative bg-[#18181b]/90 rounded-[14px] p-4 flex items-center justify-between group-hover:bg-[#18181b]/80 transition-colors">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                <Users size={24} className="text-blue-400" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-white font-bold text-base">Реферальная программа</h3>
+                                <p className="text-zinc-400 text-xs">Получай 10% с друзей</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="text-zinc-500 group-hover:text-white transition-colors" />
+                    </div>
+                </button>
             </div>
 
             {/* 5. STATS REDESIGN (Single Block) */}
@@ -202,9 +228,7 @@ export const EarningsView: React.FC = () => {
                 </div>
             </div>
 
-            {/* 7. REFERRAL SECTION */}
-            <ReferralSection />
-
-        </div>
+            {/* 7. REFERRAL SECTION REMOVED */}
+        </div >
     );
 };

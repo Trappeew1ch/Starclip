@@ -10,6 +10,7 @@ import { OfferDetailsView } from './components/OfferDetailsView';
 import { TermsView } from './components/TermsView';
 import { PrivacyView } from './components/PrivacyView';
 import { LoadingScreen } from './components/LoadingScreen';
+import { ReferralView } from './components/ReferralView';
 import { BannerSlide, ViewType } from './types';
 
 const banners: BannerSlide[] = [
@@ -83,7 +84,7 @@ function AppContent() {
           </main>
         );
       case 'earnings':
-        return <EarningsView />;
+        return <EarningsView onNavigate={setCurrentView} />;
       case 'offers':
         return <ClipsView campaigns={campaigns} />;
       case 'offer-details':
@@ -93,6 +94,8 @@ function AppContent() {
         return <TermsView onBack={handleBack} />;
       case 'privacy':
         return <PrivacyView onBack={handleBack} />;
+      case 'referral':
+        return <ReferralView onBack={() => setCurrentView('earnings')} />;
       default:
         return null;
     }
@@ -112,8 +115,7 @@ function AppContent() {
         {currentView === 'home' && <Header />}
 
         {renderContent()}
-
-        {!['offer-details', 'terms', 'privacy'].includes(currentView) && (
+        {!['offer-details', 'terms', 'privacy', 'referral'].includes(currentView) && (
           <BottomNav currentView={currentView} onNavigate={setCurrentView} isAdmin={user?.isAdmin} />
         )}
       </div>
