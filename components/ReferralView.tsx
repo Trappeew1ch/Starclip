@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Copy, UserPlus, Users, Check, ChevronLeft } from 'lucide-react';
+import { Copy, UserPlus, Check, ChevronLeft } from 'lucide-react';
 import { referralsApi } from '../services';
 
 interface Referral {
@@ -78,101 +78,82 @@ export const ReferralView: React.FC<ReferralViewProps> = ({ onBack }) => {
 
     return (
         <div className="min-h-screen w-full bg-[#09090b] relative flex flex-col items-center">
-            {/* Background Image */}
+            {/* Background Image - Full Screen Fixed */}
             <div
-                className="fixed inset-0 z-0 opacity-20"
+                className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
                 style={{
-                    backgroundImage: `url('/images/Заработак_Миниа_ап_страница_копия.jpg')`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
+                    backgroundImage: `url('/images/Заработак_Миниа_ап_страница_копия.jpg')`
                 }}
             ></div>
-            <div className="fixed inset-0 bg-gradient-to-b from-transparent via-[#09090b]/80 to-[#09090b] z-0"></div>
+
+            {/* Gradient Overlay for Readability at Bottom */}
+            <div className="fixed inset-x-0 bottom-0 h-[70vh] bg-gradient-to-t from-[#09090b] via-[#09090b]/95 to-transparent z-0 pointer-events-none"></div>
 
             {/* Header */}
             <div className="w-full flex items-center px-4 pt-6 pb-4 relative z-20">
                 <button
                     onClick={onBack}
-                    className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md active:scale-95 transition-all"
+                    className="w-10 h-10 rounded-full bg-black/20 flex items-center justify-center backdrop-blur-md active:scale-95 transition-all text-white hover:bg-black/30"
                 >
-                    <ChevronLeft className="text-white" size={24} />
+                    <ChevronLeft size={24} />
                 </button>
-                <h1 className="flex-1 text-center text-lg font-bold text-white mr-10">
-                    Реферальная программа
-                </h1>
             </div>
 
-            <div className="w-full px-4 pb-24 relative z-10 max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Main Content - Pushed down to start from middle */}
+            <div className="w-full px-4 pb-12 relative z-10 max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700 mt-[42vh]">
 
-                {/* Hero Card */}
-                <div className="glass-panel bg-[#18181b]/60 rounded-2xl p-6 mb-6 border-white/5 shadow-xl backdrop-blur-xl">
-                    <div className="flex flex-col items-center text-center mb-6">
-                        <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 ring-4 ring-blue-500/5">
-                            <UserPlus size={32} className="text-blue-400" />
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Приглашай друзей</h2>
-                        <p className="text-zinc-400 text-sm leading-relaxed">
-                            Получай <span className="text-blue-400 font-bold">10%</span> от заработка каждого приглашенного пользователя навсегда
-                        </p>
-                    </div>
+                {/* Your Link Section */}
+                <div className="glass-panel bg-[#18181b]/80 rounded-2xl p-5 mb-4 border-white/5 backdrop-blur-xl shadow-2xl">
+                    <p className="text-center text-sm font-medium text-zinc-300 mb-3">Ваша реферальная ссылка</p>
 
-                    {/* Link Display */}
-                    <div className="bg-black/40 rounded-xl p-4 mb-4 flex items-center gap-3 border border-white/5">
-                        <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Твоя ссылка</p>
-                            <p className="text-sm text-white font-mono truncate">
-                                {referralInfo?.referralLink || '...'}
-                            </p>
+                    {/* Link Box */}
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="flex-1 bg-black/40 rounded-xl px-4 py-3 border border-white/5 font-mono text-sm text-blue-400 truncate text-center">
+                            {referralInfo?.referralLink || (
+                                <span className="text-zinc-500 animate-pulse">Загрузка ссылки...</span>
+                            )}
                         </div>
                         <button
                             onClick={handleCopyLink}
-                            className="p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors active:scale-95"
+                            className="p-3 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-500 transition-colors active:scale-95"
                         >
-                            {copied ? (
-                                <Check size={20} className="text-green-400" />
-                            ) : (
-                                <Copy size={20} className="text-zinc-400" />
-                            )}
+                            {copied ? <Check size={20} /> : <Copy size={20} />}
                         </button>
                     </div>
 
-                    {/* Share Button */}
                     <button
                         onClick={handleShare}
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_4px_20px_rgba(37,99,235,0.3)] active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_20px_rgba(37,99,235,0.3)] active:scale-[0.98] flex items-center justify-center gap-2"
                     >
-                        <UserPlus size={20} />
+                        <UserPlus size={18} />
                         Пригласить друга
                     </button>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="glass-panel bg-[#18181b]/40 rounded-2xl p-4 border-white/5">
-                        <p className="text-zinc-500 text-xs font-medium mb-1">Приглашено</p>
-                        <p className="text-2xl font-bold text-white">{referralInfo?.referralCount || 0}</p>
+                {/* Compact Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 mb-8">
+                    <div className="glass-panel bg-[#18181b]/60 rounded-xl p-3 border-white/5 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-white mb-0.5">{referralInfo?.referralCount || 0}</span>
+                        <span className="text-xs text-zinc-400 font-medium uppercase tracking-wide">Приглашено</span>
                     </div>
-                    <div className="glass-panel bg-[#18181b]/40 rounded-2xl p-4 border-white/5">
-                        <p className="text-zinc-500 text-xs font-medium mb-1">Заработано</p>
-                        <p className="text-2xl font-bold text-emerald-400">₽{referralInfo?.totalEarned?.toFixed(2) || '0.00'}</p>
+                    <div className="glass-panel bg-[#18181b]/60 rounded-xl p-3 border-white/5 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-emerald-400 mb-0.5">₽{referralInfo?.totalEarned?.toFixed(0) || '0'}</span>
+                        <span className="text-xs text-zinc-400 font-medium uppercase tracking-wide">Заработано</span>
                     </div>
                 </div>
 
                 {/* Referrals List */}
                 <div className="mb-4">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <Users size={20} className="text-zinc-400" />
-                        Мои рефералы
-                    </h3>
+                    <h3 className="text-lg font-bold text-white mb-4 text-center">Мои рефералы</h3>
 
                     {referrals.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {referrals.map((referral) => (
                                 <div
                                     key={referral.id}
-                                    className="flex items-center gap-4 p-4 bg-[#18181b]/40 rounded-2xl border border-white/5"
+                                    className="flex items-center gap-3 p-3 bg-[#18181b]/40 rounded-xl border border-white/5 active:bg-[#18181b]/60 transition-colors"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center ring-2 ring-white/5">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center ring-1 ring-white/5 shrink-0">
                                         {referral.photoUrl ? (
                                             <img
                                                 src={referral.photoUrl}
@@ -180,29 +161,25 @@ export const ReferralView: React.FC<ReferralViewProps> = ({ onBack }) => {
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            <span className="text-base font-bold text-zinc-500">
+                                            <span className="text-sm font-bold text-zinc-500">
                                                 {(referral.firstName || referral.username || '?')[0].toUpperCase()}
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-base font-medium text-white truncate">
+                                        <p className="text-sm font-medium text-white truncate">
                                             {referral.firstName || referral.username || 'Пользователь'}
                                         </p>
-                                        <p className="text-xs text-zinc-500">
-                                            Присоединился {referral.joinedAt}
+                                        <p className="text-[10px] text-zinc-500">
+                                            {referral.joinedAt}
                                         </p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-12 rounded-2xl bg-[#18181b]/20 border border-white/5 border-dashed">
-                            <div className="w-16 h-16 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4">
-                                <Users size={32} className="text-zinc-600" />
-                            </div>
-                            <p className="text-zinc-400 font-medium">Список пуст</p>
-                            <p className="text-sm text-zinc-500 mt-1">Пригласите друзей, чтобы начать зарабатывать</p>
+                        <div className="text-center py-8">
+                            <p className="text-zinc-500 text-sm">У вас пока нет рефералов</p>
                         </div>
                     )}
                 </div>
