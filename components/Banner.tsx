@@ -36,10 +36,10 @@ export const Banner: React.FC<BannerProps> = ({ slides }) => {
       {/* Container - clickable */}
       <button
         onClick={handleBannerClick}
-        className="relative w-full glass-panel rounded-xl p-1 overflow-hidden cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
+        className="relative w-full glass-panel rounded-[32px] p-1 overflow-hidden cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-transform"
       >
         {/* Inner Content - No Text, Zoomed Image */}
-        <div className="relative w-full aspect-[745/178] overflow-hidden rounded-xl bg-zinc-900/50">
+        <div className="relative w-full aspect-[745/178] overflow-hidden rounded-[28px] bg-zinc-900/50">
           {/* Background Image - Scaled Up */}
           <div
             className="absolute inset-0 bg-cover bg-center opacity-90 scale-110"

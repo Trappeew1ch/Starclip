@@ -107,7 +107,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                     {/* Withdraw Button */}
                     <button
                         onClick={handleWithdraw}
-                        className="bg-white text-black font-bold text-base px-12 py-3.5 rounded-full hover:bg-zinc-200 transition-all shadow-[0_0_25px_rgba(255,255,255,0.15)] active:scale-95"
+                        className="bg-white text-black font-bold text-base px-12 py-3.5 rounded-[32px] hover:bg-zinc-200 transition-all shadow-[0_0_25px_rgba(255,255,255,0.15)] active:scale-95"
                     >
                         Вывести
                     </button>
@@ -118,21 +118,16 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
             <div className="w-full px-4 mb-8 relative z-10 max-w-sm">
                 <button
                     onClick={() => onNavigate('referral')}
-                    className="w-full relative group overflow-hidden rounded-2xl p-0.5"
+                    className="w-full relative group overflow-hidden rounded-[32px] transition-transform active:scale-[0.98]"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-90 transition-opacity group-hover:opacity-100"></div>
-
-                    <div className="relative bg-[#18181b]/90 rounded-[14px] p-4 flex items-center justify-between group-hover:bg-[#18181b]/80 transition-colors">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                <Users size={24} className="text-blue-400" />
-                            </div>
-                            <div className="text-left">
-                                <h3 className="text-white font-bold text-base">Реферальная программа</h3>
-                                <p className="text-zinc-400 text-xs">Получай 10% с друзей</p>
-                            </div>
-                        </div>
-                        <ChevronRight className="text-zinc-500 group-hover:text-white transition-colors" />
+                    <div className="w-full aspect-[3/1] relative rounded-[32px] overflow-hidden shadow-lg border border-white/5">
+                        <img
+                            src="/images/referral-banner.png"
+                            alt="Referral Program"
+                            className="w-full h-full object-cover"
+                        />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                     </div>
                 </button>
             </div>
@@ -144,7 +139,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                 </div>
 
                 {/* Combined Stats Container */}
-                <div className="glass-panel bg-[#18181b]/30 rounded-2xl flex flex-col border-white/5 shadow-lg backdrop-blur-md overflow-hidden">
+                <div className="glass-panel bg-[#18181b]/30 rounded-[32px] flex flex-col border-white/5 shadow-lg backdrop-blur-md overflow-hidden">
                     {/* Row 1: Profiles */}
                     <div className="px-4 h-12 flex items-center justify-between border-b border-white/5">
                         <span className="text-sm font-medium text-zinc-400">Профили</span>
@@ -187,11 +182,11 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                     {stats?.topClips && stats.topClips.length > 0 ? stats.topClips.map((clip) => (
                         <div key={clip.id} className="relative group w-full">
                             {/* Hover Glow */}
-                            <div className="absolute inset-0 bg-blue-600/20 blur-lg rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            <div className="absolute inset-0 bg-blue-600/20 blur-lg rounded-[32px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                            <div className="glass-panel rounded-2xl p-3 flex items-center gap-4 relative z-10 bg-[#18181b]/60 border-white/5 hover:bg-[#18181b]/80 transition-colors">
+                            <div className="glass-panel rounded-[32px] p-3 flex items-center gap-4 relative z-10 bg-[#18181b]/60 border-white/5 hover:bg-[#18181b]/80 transition-colors">
                                 {/* Clip Thumbnail */}
-                                <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
+                                <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg">
                                     <img src={clip.imageUrl} alt={clip.title} className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                                         <Play size={12} className="fill-white text-white" />

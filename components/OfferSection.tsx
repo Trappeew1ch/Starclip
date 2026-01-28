@@ -73,7 +73,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                         <div className="flex flex-col relative">
 
                             {/* Image Area */}
-                            <div className="relative z-30 w-full aspect-[2.61/1] rounded-xl overflow-hidden shadow-2xl bg-[#09090b]">
+                            <div className="relative z-30 w-full aspect-[2.61/1] rounded-[32px] overflow-hidden shadow-2xl bg-[#09090b]">
                                 <img
                                     src={offer.imageUrl}
                                     alt={offer.name}
@@ -83,7 +83,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                             </div>
 
                             {/* Info Strip */}
-                            <div className="relative z-10 -mt-8 pt-9 pb-4 px-5 bg-[#18181b] border border-white/5 rounded-b-xl shadow-lg">
+                            <div className="relative z-10 -mt-8 pt-9 pb-4 px-5 bg-[#18181b] border border-white/5 rounded-b-[32px] shadow-lg">
 
                                 {/* Video Title */}
                                 <div className="mb-3">
