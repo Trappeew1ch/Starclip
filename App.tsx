@@ -61,6 +61,25 @@ function AppContent() {
     setCurrentView('home');
   };
 
+  // Manage Telegram Back Button
+  useEffect(() => {
+    const tg = (window as any).Telegram?.WebApp;
+    if (!tg) return;
+
+    // Show/Hide Back Button based on view
+    if (currentView !== 'home') {
+      tg.BackButton.show();
+      tg.BackButton.onClick(handleBack);
+    } else {
+      tg.BackButton.hide();
+    }
+
+    // Cleanup listener on effect re-run (view change)
+    return () => {
+      tg.BackButton.offClick(handleBack);
+    };
+  }, [currentView]);
+
   const handleJoinCampaign = async (offer: any) => {
     const success = await joinCampaign(offer.id);
     if (success) {

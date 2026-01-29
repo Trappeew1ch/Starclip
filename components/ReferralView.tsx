@@ -89,15 +89,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({ onBack }) => {
             {/* Gradient Overlay only at very bottom for text readability */}
             <div className="fixed inset-x-0 bottom-0 h-[40vh] bg-gradient-to-t from-[#09090b] via-[#09090b]/80 to-transparent z-0 pointer-events-none"></div>
 
-            {/* Header - Transparent and floating */}
-            <div className="absolute top-0 left-0 right-0 p-4 pt-12 z-20 flex justify-between items-center pointer-events-none">
-                <button
-                    onClick={onBack}
-                    className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center backdrop-blur-md active:scale-95 transition-all pointer-events-auto hover:bg-black/60 border border-white/10"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-            </div>
+
 
             {/* Main Content - Pushed down to start from middle (approx 48vh) */}
             <div className="w-full px-4 pb-12 relative z-10 max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700 mt-[48vh]">

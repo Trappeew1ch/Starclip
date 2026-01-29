@@ -9,15 +9,8 @@ export const TermsView: React.FC<TermsViewProps> = ({ onBack }) => {
     return (
         <div
             className="w-full min-h-screen bg-[#09090b] text-white px-4 pb-24 animate-in fade-in duration-300 relative z-20"
-            style={{ paddingTop: 'max(24px, env(safe-area-inset-top, 24px))' }}
+            style={{ paddingTop: 'max(40px, env(safe-area-inset-top, 40px))' }}
         >
-            <button
-                onClick={onBack}
-                className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
-            >
-                <ArrowLeft size={20} />
-                <span>Back</span>
-            </button>
 
             <h1 className="text-2xl font-bold mb-2">Terms of Service</h1>
             <p className="text-zinc-500 text-sm mb-8">Last updated: 23 January 2026</p>
