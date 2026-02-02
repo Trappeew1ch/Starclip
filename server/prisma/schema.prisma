@@ -67,22 +67,24 @@ model UserCampaign {
 }
 
 model Clip {
-  id              String   @id @default(uuid())
-  userId          Int
-  offerId         String
-  videoUrl        String
-  platform        String // 'youtube' | 'tiktok' | 'instagram'
-  status          String   @default("pending") // pending | approved | rejected
-  views           Int      @default(0)
-  likes           Int      @default(0)
-  comments        Int      @default(0)
-  earnedAmount    Float    @default(0)
-  rejectionReason String?
-  thumbnailUrl    String?
-  title           String?
-  lastStatsFetch  DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String    @id @default(uuid())
+  userId           Int
+  offerId          String
+  videoUrl         String
+  platform         String // 'youtube' | 'tiktok' | 'instagram'
+  status           String    @default("pending") // pending | approved | rejected
+  views            Int       @default(0)
+  likes            Int       @default(0)
+  comments         Int       @default(0)
+  earnedAmount     Float     @default(0)
+  rejectionReason  String?
+  thumbnailUrl     String?
+  title            String?
+  verificationCode String? // Unique hashtag e.g. #SC_AB12_XYZ99
+  isVerified       Boolean   @default(false) // True when hashtag found in description
+  lastStatsFetch   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)

@@ -1,92 +1,57 @@
 import { prisma } from '../index.js';
-import * as tiktokService from '../services/tiktok.js';
+import { getTikTokStats, verifyHashtag } from '../services/ytdlpParser.js';
 
-// Update stats for all approved TikTok clips
-export async function updateTikTokClipsStats() {
-    console.log('🔄 Starting TikTok stats update job...');
+/**
+ * Update stats for all approved TikTok/YouTube clips using yt-dlp
+ * Runs every 10 minutes
+ */
+export async function updateClipsWithYtdlp() {
+    console.log('🔄 Starting yt-dlp stats update job...');
 
     try {
-        // Get all approved TikTok clips
+        // Get all approved clips that need stats update
         const clips = await prisma.clip.findMany({
             where: {
-                platform: 'tiktok',
-                status: 'approved'
+                status: 'approved',
+                platform: { in: ['tiktok', 'youtube'] }
             },
             include: {
-                user: {
-                    include: {
-                        socialAccounts: {
-                            where: { platform: 'tiktok' }
-                        }
-                    }
-                },
-                offer: true
+                offer: true,
+                user: true
             }
         });
 
-        console.log(`📊 Found ${clips.length} TikTok clips to update`);
+        console.log(`📊 Found ${clips.length} clips to update`);
 
         let updatedCount = 0;
+        let verifiedCount = 0;
         let earningsAdded = 0;
 
         for (const clip of clips) {
             try {
-                const tiktokAccount = clip.user.socialAccounts[0];
-                if (!tiktokAccount || !tiktokAccount.accessToken) {
-                    console.log(`⚠️ Clip ${clip.id}: User has no TikTok account connected`);
+                // Fetch stats using yt-dlp
+                const stats = await getTikTokStats(clip.videoUrl);
+
+                if (!stats) {
+                    console.log(`⚠️ Clip ${clip.id}: Failed to fetch stats`);
                     continue;
                 }
 
-                // Check if token needs refresh
-                if (tiktokAccount.tokenExpiresAt && tiktokAccount.tokenExpiresAt < new Date()) {
-                    if (tiktokAccount.refreshToken) {
-                        const newTokens = await tiktokService.refreshAccessToken(tiktokAccount.refreshToken);
-                        if (newTokens) {
-                            await prisma.socialAccount.update({
-                                where: { id: tiktokAccount.id },
-                                data: {
-                                    accessToken: newTokens.access_token,
-                                    refreshToken: newTokens.refresh_token,
-                                    tokenExpiresAt: new Date(Date.now() + newTokens.expires_in * 1000)
-                                }
-                            });
-                            tiktokAccount.accessToken = newTokens.access_token;
-                        } else {
-                            console.log(`⚠️ Clip ${clip.id}: Failed to refresh token`);
-                            continue;
-                        }
+                // Check verification status
+                let isVerified = clip.isVerified;
+                if (!isVerified && clip.verificationCode) {
+                    isVerified = verifyHashtag(stats.description, clip.verificationCode);
+                    if (isVerified) {
+                        verifiedCount++;
+                        console.log(`✅ Clip ${clip.id}: Verified with hashtag ${clip.verificationCode}`);
                     }
                 }
 
-                // Extract video ID from URL
-                const videoId = tiktokService.extractVideoId(clip.videoUrl);
-                if (!videoId) {
-                    console.log(`⚠️ Clip ${clip.id}: Cannot extract video ID from URL`);
-                    continue;
-                }
-
-                // Try to get video stats
-                let videoStats = null;
-
-                // First try query endpoint
-                const videos = await tiktokService.queryVideoInfo(tiktokAccount.accessToken!, [videoId]);
-                if (videos && videos.length > 0) {
-                    videoStats = videos[0];
-                } else {
-                    // Fallback to searching in user's videos
-                    videoStats = await tiktokService.getVideoStats(tiktokAccount.accessToken!, videoId);
-                }
-
-                if (!videoStats) {
-                    console.log(`⚠️ Clip ${clip.id}: Video stats not available`);
-                    continue;
-                }
-
-                const newViews = videoStats.view_count;
+                const newViews = stats.views;
                 const previousViews = clip.views;
 
-                // Only update if views increased
-                if (newViews > previousViews) {
+                // Only count views if clip is verified
+                if (isVerified && newViews > previousViews) {
                     const viewsDiff = newViews - previousViews;
                     const additionalEarnings = (viewsDiff / 1000) * clip.offer.cpmRate;
 
@@ -95,8 +60,11 @@ export async function updateTikTokClipsStats() {
                         where: { id: clip.id },
                         data: {
                             views: newViews,
-                            likes: videoStats.like_count,
-                            comments: videoStats.comment_count,
+                            likes: stats.likes,
+                            comments: stats.comments,
+                            thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
+                            title: stats.title || clip.title,
+                            isVerified: true,
                             earnedAmount: clip.earnedAmount + additionalEarnings,
                             lastStatsFetch: new Date()
                         }
@@ -111,15 +79,17 @@ export async function updateTikTokClipsStats() {
                     });
 
                     // Create transaction record
-                    await prisma.transaction.create({
-                        data: {
-                            userId: clip.userId,
-                            clipId: clip.id,
-                            amount: additionalEarnings,
-                            type: 'earning',
-                            status: 'completed'
-                        }
-                    });
+                    if (additionalEarnings > 0) {
+                        await prisma.transaction.create({
+                            data: {
+                                userId: clip.userId,
+                                clipId: clip.id,
+                                amount: additionalEarnings,
+                                type: 'earning',
+                                status: 'completed'
+                            }
+                        });
+                    }
 
                     // Update offer paidOut
                     await prisma.offer.update({
@@ -132,6 +102,21 @@ export async function updateTikTokClipsStats() {
                     console.log(`✅ Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽`);
                     updatedCount++;
                     earningsAdded += additionalEarnings;
+                } else if (!isVerified) {
+                    // Still update basic info but don't count earnings
+                    await prisma.clip.update({
+                        where: { id: clip.id },
+                        data: {
+                            views: newViews,
+                            likes: stats.likes,
+                            comments: stats.comments,
+                            thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
+                            title: stats.title || clip.title,
+                            isVerified,
+                            lastStatsFetch: new Date()
+                        }
+                    });
+                    console.log(`⏳ Clip ${clip.id}: Updated stats (not verified yet)`);
                 } else {
                     // Just update last fetch time
                     await prisma.clip.update({
@@ -139,31 +124,42 @@ export async function updateTikTokClipsStats() {
                         data: { lastStatsFetch: new Date() }
                     });
                 }
+
+                // Rate limiting - wait 3 seconds between requests
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
             } catch (clipError) {
                 console.error(`❌ Error updating clip ${clip.id}:`, clipError);
             }
         }
 
-        console.log(`✅ Stats update complete: ${updatedCount} clips updated, +${earningsAdded.toFixed(2)} ₽ total earnings`);
-        return { updatedCount, earningsAdded };
+        console.log(`✅ Stats update complete: ${updatedCount} clips earned, ${verifiedCount} newly verified, +${earningsAdded.toFixed(2)} ₽ total`);
+        return { updatedCount, verifiedCount, earningsAdded };
     } catch (error) {
-        console.error('❌ Stats update job failed:', error);
+        console.error('❌ yt-dlp stats update job failed:', error);
         throw error;
     }
 }
 
-// Schedule the job to run every 4 hours
-export function startStatsUpdateScheduler() {
-    // Run immediately on startup (with 30 sec delay)
+/**
+ * Start the scheduler to run every 10 minutes
+ */
+export function startYtdlpStatsScheduler() {
+    const TEN_MINUTES = 10 * 60 * 1000;
+
+    // Run once on startup (after 30 sec delay)
     setTimeout(() => {
-        updateTikTokClipsStats().catch(console.error);
+        updateClipsWithYtdlp().catch(console.error);
     }, 30000);
 
-    // Then run every 4 hours
-    const FOUR_HOURS = 4 * 60 * 60 * 1000;
+    // Then run every 10 minutes
     setInterval(() => {
-        updateTikTokClipsStats().catch(console.error);
-    }, FOUR_HOURS);
+        updateClipsWithYtdlp().catch(console.error);
+    }, TEN_MINUTES);
 
-    console.log('⏰ Stats update scheduler started (runs every 4 hours)');
+    console.log('⏰ yt-dlp stats scheduler started (runs every 10 minutes)');
 }
+
+// Legacy export for backwards compatibility
+export { updateClipsWithYtdlp as updateTikTokClipsStats };
+export { startYtdlpStatsScheduler as startStatsUpdateScheduler };

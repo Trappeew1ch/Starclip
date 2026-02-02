@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
+import { generateVerificationCode, getTikTokStats, verifyHashtag } from '../services/ytdlpParser.js';
 
 const router = Router();
 
@@ -38,6 +39,8 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
             date: formatDate(clip.createdAt),
             platform: clip.platform,
             videoUrl: clip.videoUrl,
+            verificationCode: clip.verificationCode,
+            isVerified: clip.isVerified,
             aiData: clip.status === 'approved' ? {
                 score: 85,
                 category: 'Content',
@@ -91,6 +94,22 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
             });
         }
 
+        // Generate unique verification code
+        const verificationCode = generateVerificationCode(offerId);
+
+        // Try to fetch initial stats using yt-dlp
+        let initialStats = null;
+        let thumbnailUrl = null;
+        let title = null;
+
+        if (platform === 'tiktok' || platform === 'youtube') {
+            initialStats = await getTikTokStats(videoUrl);
+            if (initialStats) {
+                thumbnailUrl = initialStats.thumbnailUrl;
+                title = initialStats.title;
+            }
+        }
+
         // Create clip
         const clip = await prisma.clip.create({
             data: {
@@ -98,7 +117,13 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
                 offerId,
                 videoUrl,
                 platform,
-                status: 'pending'
+                status: 'pending',
+                verificationCode,
+                thumbnailUrl,
+                title,
+                views: initialStats?.views || 0,
+                likes: initialStats?.likes || 0,
+                comments: initialStats?.comments || 0
             },
             include: { offer: true }
         });
@@ -110,8 +135,10 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
                 videoUrl: clip.videoUrl,
                 platform: clip.platform,
                 status: clip.status,
+                verificationCode: clip.verificationCode,
                 createdAt: clip.createdAt
-            }
+            },
+            verificationInstructions: `Добавьте хэштег ${verificationCode} в описание вашего видео для подтверждения авторства. Без этого хэштега просмотры не будут засчитываться.`
         });
     } catch (error) {
         console.error('Submit clip error:', error);
