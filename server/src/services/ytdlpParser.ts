@@ -20,12 +20,23 @@ export interface TikTokVideoStats {
  */
 export async function getTikTokStats(url: string): Promise<TikTokVideoStats | null> {
     return new Promise((resolve) => {
-        const proc = spawn('yt-dlp', [
+        // Build yt-dlp arguments
+        const args = [
             '--dump-json',
             '--no-download',
-            '--no-warnings',
-            url
-        ]);
+            '--no-warnings'
+        ];
+
+        // Add proxy if configured
+        const proxyUrl = process.env.YTDLP_PROXY;
+        if (proxyUrl) {
+            args.push('--proxy', proxyUrl);
+            console.log(`🔒 Using proxy for yt-dlp: ${proxyUrl.split('@')[1] || proxyUrl}`);
+        }
+
+        args.push(url);
+
+        const proc = spawn('yt-dlp', args);
 
         let output = '';
         let errorOutput = '';

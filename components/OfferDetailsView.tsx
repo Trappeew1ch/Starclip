@@ -12,7 +12,7 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
     if (!offer) return null;
 
     return (
-        <div className="w-full flex flex-col pt-4 pb-24 animate-in slide-in-from-right duration-300 relative min-h-screen bg-[#09090b] overflow-hidden">
+        <div className="w-full flex flex-col pt-4 pb-24 animate-in slide-in-from-right duration-300 relative min-h-screen bg-[#09090b]">
 
             {/* Navigation Header */}
             {/* Navigation Header - Pushed            {/* Navigation Header - Pushed down for Telegram UI */}
@@ -228,15 +228,17 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
 
             </div>
 
+
             {/* Sticky Action Button */}
-            <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent z-50">
+            <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent z-[60] pointer-events-none">
                 <button
                     onClick={onJoin}
-                    className="w-full bg-white text-black font-bold text-lg py-4 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 hover:bg-zinc-100"
+                    className="w-full bg-white text-black font-bold text-lg py-4 rounded-full shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-[0.98] transition-transform flex items-center justify-center gap-2 hover:bg-zinc-100 pointer-events-auto"
                 >
                     Участвовать в кампании
                 </button>
             </div>
+
 
         </div>
     );
