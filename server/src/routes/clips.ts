@@ -97,20 +97,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
         // Generate unique verification code
         const verificationCode = generateVerificationCode(offerId);
 
-        // Try to fetch initial stats using yt-dlp
-        let initialStats = null;
-        let thumbnailUrl = null;
-        let title = null;
-
-        if (platform === 'tiktok' || platform === 'youtube') {
-            initialStats = await getTikTokStats(videoUrl);
-            if (initialStats) {
-                thumbnailUrl = initialStats.thumbnailUrl;
-                title = initialStats.title;
-            }
-        }
-
-        // Create clip
+        // Create clip IMMEDIATELY (don't wait for yt-dlp)
         const clip = await prisma.clip.create({
             data: {
                 userId: req.user!.id,
@@ -118,16 +105,12 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
                 videoUrl,
                 platform,
                 status: 'pending',
-                verificationCode,
-                thumbnailUrl,
-                title,
-                views: initialStats?.views || 0,
-                likes: initialStats?.likes || 0,
-                comments: initialStats?.comments || 0
+                verificationCode
             },
             include: { offer: true }
         });
 
+        // Respond immediately
         res.json({
             message: 'Clip submitted for review',
             clip: {
@@ -140,6 +123,27 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
             },
             verificationInstructions: `Добавьте хэштег ${verificationCode} в описание вашего видео для подтверждения авторства. Без этого хэштега просмотры не будут засчитываться.`
         });
+
+        // Fetch stats in background (non-blocking)
+        if (platform === 'tiktok' || platform === 'youtube') {
+            getTikTokStats(videoUrl).then(async (stats) => {
+                if (stats) {
+                    await prisma.clip.update({
+                        where: { id: clip.id },
+                        data: {
+                            thumbnailUrl: stats.thumbnailUrl,
+                            title: stats.title,
+                            views: stats.views,
+                            likes: stats.likes,
+                            comments: stats.comments
+                        }
+                    });
+                    console.log(`📊 Stats fetched for clip ${clip.id}: ${stats.views} views`);
+                }
+            }).catch(err => {
+                console.log(`⚠️ Background stats fetch failed for clip ${clip.id}:`, err.message);
+            });
+        }
     } catch (error) {
         console.error('Submit clip error:', error);
         res.status(500).json({ error: 'Server error' });
