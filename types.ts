@@ -79,6 +79,9 @@ export interface AccountVideo {
   status: 'published' | 'processing' | 'rejected';
   date: string;
   aiData?: AIAnalysis;
+  videoUrl?: string;
+  verificationCode?: string;
+  isVerified?: boolean;
 }
 
 export interface SocialAccount {

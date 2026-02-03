@@ -101,7 +101,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     // Filter Logic
     const filteredVideos = selectedAccount.id === 'all'
         ? videos
-        : videos.filter(v => v.accountId === selectedAccount.id);
+        : videos.filter(v => v.accountId === (selectedAccount as SocialAccount).platform);
 
     // Accepted videos only for "Recent Clips" section
     const recentAcceptedVideos = videos.filter(v => v.status === 'published');
