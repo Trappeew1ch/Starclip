@@ -210,13 +210,14 @@ router.post('/clips/:id/approve', async (req, res) => {
         // Calculate earnings: views / 1000 * CPM rate
         const earnedAmount = (views / 1000) * clip.offer.cpmRate;
 
-        // Update clip
+        // Update clip - always set isVerified=true when admin approves
         const updatedClip = await prisma.clip.update({
             where: { id: clipId },
             data: {
                 status: 'approved',
                 views,
-                earnedAmount
+                earnedAmount,
+                isVerified: true // Admin approval = verified
             }
         });
 
