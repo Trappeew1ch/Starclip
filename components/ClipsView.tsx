@@ -371,7 +371,9 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                             <Link className="h-5 w-5 text-zinc-500" />
                                         </div>
                                         <input
-                                            type="text"
+                                            type="url"
+                                            inputMode="url"
+                                            autoFocus
                                             value={uploadLink}
                                             onChange={(e) => setUploadLink(e.target.value)}
                                             placeholder="https://..."
