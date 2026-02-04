@@ -61,11 +61,25 @@ export function verifyHashtag(description: string, expectedHashtag: string): boo
 }
 
 /**
- * Generate a unique verification code for a clip
- * Format: #SC_{offerId_prefix}_{random}
+ * Generate a unique verification code for a user
+ * Format: #SC-{random_6_chars}
  */
-export function generateVerificationCode(offerId: string): string {
-    const prefix = offerId.slice(0, 4).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-    return `#SC_${prefix}_${random}`;
+export function generateUserVerificationCode(): string {
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `#SC-${random}`;
+}
+
+/**
+ * Check if description ENDS with the verification hashtag strictly
+ * Ignores whitespace/newlines at the very end
+ */
+export function verifyStrictHashtag(description: string, expectedHashtag: string): boolean {
+    if (!description || !expectedHashtag) return false;
+
+    // Normalize string: remove trailing whitespace/newlines
+    const normalizedDesc = description.trim();
+    const normalizedTag = expectedHashtag.trim();
+
+    // Check if it ends with the tag
+    return normalizedDesc.endsWith(normalizedTag);
 }

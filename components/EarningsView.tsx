@@ -120,11 +120,11 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                     onClick={() => onNavigate('referral')}
                     className="w-full relative group overflow-hidden rounded-[32px] transition-transform active:scale-[0.98]"
                 >
-                    <div className="w-full aspect-[3/1] relative rounded-[32px] overflow-hidden shadow-lg border border-white/5">
+                    <div className="w-full h-32 relative rounded-[32px] overflow-hidden shadow-lg border border-white/5">
                         <img
                             src="/images/referral-banner.png"
                             alt="Referral Program"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain bg-[#09090b]"
                         />
                         {/* Hover overlay */}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>

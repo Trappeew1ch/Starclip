@@ -17,6 +17,7 @@ model User {
   balance      Float     @default(0)
   isAdmin      Boolean   @default(false)
   referralCode String?   @unique
+  verificationCode String? @unique
   referredById Int?
   referredAt   DateTime?
   createdAt    DateTime  @default(now())

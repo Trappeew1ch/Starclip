@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Youtube, Instagram, Music2, Clock, CheckCircle2, FileText, LayoutList, Plus, X, Download, ExternalLink, Play, UploadCloud, Link, AlertTriangle, MessageCircle, BarChart2, ArrowRight } from 'lucide-react';
+import { ChevronDown, Youtube, Instagram, Music2, Clock, CheckCircle2, FileText, LayoutList, Plus, X, Download, ExternalLink, Play, UploadCloud, Link, AlertTriangle, MessageCircle, BarChart2, ArrowRight, ShieldCheck, Copy } from 'lucide-react';
 import { MyCampaign, SocialAccount, AccountVideo } from '../types';
 import { clipsApi, usersApi, campaignsApi } from '../services';
 
@@ -18,7 +18,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
     // Modals
-    const [activeModal, setActiveModal] = useState<'directions' | 'posts' | 'upload' | 'connect' | 'videoDetail' | null>(null);
+    const [activeModal, setActiveModal] = useState<'directions' | 'posts' | 'upload' | 'connect' | 'videoDetail' | 'verification' | null>(null);
     const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
     const [selectedVideo, setSelectedVideo] = useState<AccountVideo | null>(null);
     const [uploadLink, setUploadLink] = useState('');
@@ -259,6 +259,79 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {/* VERIFICATION BANNER */}
+            <div className="relative z-10 w-full mb-6">
+                <button
+                    onClick={() => setActiveModal('verification')}
+                    className="w-full relative group overflow-hidden rounded-[20px] shadow-[0_0_20px_rgba(59,130,246,0.15)] active:scale-[0.98] transition-transform"
+                >
+                    <img
+                        src="/images/starclip-code.png"
+                        alt="Получить код верификации"
+                        className="w-full h-auto object-cover"
+                    />
+                    {/* Hover effect */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-white/5 transition-colors"></div>
+                </button>
+            </div>
+
+            {/* VERIFICATION MODAL */}
+            {activeModal === 'verification' && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-[#18181b] w-full max-w-sm rounded-[32px] p-6 border border-white/10 relative overflow-hidden">
+                        {/* Glow effect */}
+                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+
+                        <button
+                            onClick={() => setActiveModal(null)}
+                            className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-zinc-400"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
+                                <ShieldCheck size={32} />
+                            </div>
+
+                            <h3 className="text-xl font-bold text-white mb-2">Ваш код автора</h3>
+                            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
+                                Чтобы мы засчитывали просмотры, вставьте этот код в <strong>самый конец</strong> описания видео.
+                                <br />
+                                <span className="text-xs text-zinc-500 mt-2 block bg-red-500/10 p-2 rounded text-red-300">
+                                    Важно: Без пробелов после кода!
+                                </span>
+                            </p>
+
+                            <div className="w-full bg-black/40 rounded-xl p-4 border border-white/5 mb-6 flex items-center justify-between gap-3">
+                                <code className="text-blue-400 font-mono font-bold text-lg tracking-wider">
+                                    {videos[0]?.verificationCode || '#SC-WAIT...'}
+                                </code>
+                                <button
+                                    onClick={() => {
+                                        const code = videos[0]?.verificationCode;
+                                        if (code) {
+                                            navigator.clipboard.writeText(code);
+                                            // Optional: visual feedback handled by button state or toast if we had one
+                                        }
+                                    }}
+                                    className="p-3 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-400 transition-colors"
+                                >
+                                    <Copy size={20} />
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-bold transition-all active:scale-[0.98] shadow-lg shadow-blue-600/20"
+                            >
+                                Всё понятно
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

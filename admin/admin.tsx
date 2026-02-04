@@ -432,6 +432,13 @@ function AdminPanel() {
         }
     };
 
+    // Helper for image URLs
+    const getImgUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `${API_URL}${url}`;
+    };
+
     const handleToggleOffer = async (offerId: string) => {
         try {
             await adminRequest(`/admin/offers/${offerId}/toggle`, { method: 'POST' });

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
-import { generateVerificationCode, getTikTokStats, verifyHashtag } from '../services/ytdlpParser.js';
+import { generateUserVerificationCode, getTikTokStats, verifyStrictHashtag } from '../services/ytdlpParser.js';
 import { processClipStats } from '../services/statsCalculator.js';
 
 const router = Router();
@@ -108,25 +108,77 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
             return res.status(400).json({ error: 'This video has already been submitted' });
         }
 
-        // Generate unique verification code
-        const verificationCode = generateVerificationCode(offerId);
+        // Get or generate User Verification Code
+        let user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+        let verificationCode = user?.verificationCode;
 
-        // Create clip IMMEDIATELY
+        if (!verificationCode) {
+            verificationCode = generateUserVerificationCode();
+            await prisma.user.update({
+                where: { id: req.user!.id },
+                data: { verificationCode }
+            });
+        }
+
+        // PRE-VALIDATION: Check description immediately using background fetch if possible, 
+        // OR rely on client to confirm?
+        // User requeset: "Мы запрашиваем сразу данные о видео... если в конце нет кода... мы отклоняем видео сразу и даём ему уведомление"
+        // This implies we MUST fetch stats NOW.
+
+        let stats = null;
+        try {
+            if (platform === 'tiktok') {
+                stats = await getTikTokStats(videoUrl);
+            }
+            // Add YouTube support if needed later
+        } catch (e) {
+            console.error('Validation fetch error:', e);
+            // If fetch fails, do we block? Maybe allow but mark unverified? 
+            // "If code missing... decline immediately". 
+            // Let's assume on fetch error we can't verify, so we return error.
+            return res.status(400).json({ error: 'Could not fetch video data. Please check URL privacy settings.' });
+        }
+
+        if (!stats) {
+            return res.status(400).json({ error: 'Video not found or inaccessible.' });
+        }
+
+        const isValid = verifyStrictHashtag(stats.description, verificationCode);
+
+        if (!isValid) {
+            return res.status(400).json({
+                error: 'Verification failed',
+                details: `Description must end with ${verificationCode}`,
+                code: verificationCode
+            });
+        }
+
+        // Create clip (Verified)
         const clip = await prisma.clip.create({
             data: {
                 userId: req.user!.id,
                 offerId,
                 videoUrl,
                 platform,
-                status: 'pending',
-                verificationCode
+                status: 'pending', // Still pending mod approval? Or approved? Usually "accepted" means verified. But Admin approval might be separate. 
+                // User said "video will be accepted ONLY IF...". 
+                // Let's keep status pending (for admin budget/content check) but isVerified = true.
+                verificationCode,
+                isVerified: true,
+                views: stats.views,
+                likes: stats.likes,
+                comments: stats.comments,
+                title: stats.description.slice(0, 50) + '...'
             },
             include: { offer: true }
         });
 
-        // Respond immediately
+        // Calculate initial stats/earnings
+        await processClipStats(clip.id, stats);
+
+        // Respond
         res.json({
-            message: 'Clip submitted for review',
+            message: 'Clip submitted and verified',
             clip: {
                 id: clip.id,
                 videoUrl: clip.videoUrl,
@@ -134,20 +186,8 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
                 status: clip.status,
                 verificationCode: clip.verificationCode,
                 createdAt: clip.createdAt
-            },
-            verificationInstructions: `Добавьте хэштег ${verificationCode} в описание вашего видео для подтверждения авторства. Без этого хэштега просмотры не будут засчитываться.`
+            }
         });
-
-        // Fetch stats in background (non-blocking)
-        if (platform === 'tiktok' || platform === 'youtube') {
-            getTikTokStats(videoUrl).then(async (stats) => {
-                if (stats) {
-                    await processClipStats(clip.id, stats);
-                }
-            }).catch(err => {
-                console.log(`⚠️ Background stats fetch failed for clip ${clip.id}:`, err.message);
-            });
-        }
     } catch (error) {
         console.error('Submit clip error:', error);
         res.status(500).json({ error: 'Server error' });
