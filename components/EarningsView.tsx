@@ -115,21 +115,20 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
             </div>
 
             {/* REFERRAL BANNER */}
-            <div className="w-full px-4 mb-8 relative z-10 max-w-2xl">
+            <div className="w-full px-4 mb-8 relative z-10">
                 <button
                     onClick={() => onNavigate('referral')}
-                    className="w-full relative group overflow-hidden rounded-[32px] transition-transform active:scale-[0.98]"
+                    className="w-full relative group overflow-hidden rounded-[20px] transition-transform active:scale-[0.98] shadow-lg border border-white/5"
                 >
-                    {/* Aspect Ratio 1225/204 ~= 6/1 */}
-                    <div className="w-full aspect-[1225/204] relative rounded-[20px] overflow-hidden shadow-lg border border-white/5">
-                        <img
-                            src="/images/referral-banner-new.png"
-                            alt="Referral Program"
-                            className="w-full h-full object-cover"
-                        />
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-                    </div>
+                    <img
+                        src="/images/referral-banner-new.png"
+                        alt="Referral Program"
+                        width={1225}
+                        height={204}
+                        className="w-full h-auto object-contain"
+                    />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
                 </button>
             </div>
 

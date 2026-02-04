@@ -16,7 +16,15 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
         loadOffers(activeTab);
     }, [activeTab]);
 
+    // Restore filteredOffers which was lost
     const filteredOffers = offers.filter(offer => offer.type === activeTab);
+
+    const getImgUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        // Ensure relative paths go through /api proxy/route if that's how they are served
+        return `/api${url.startsWith('/') ? '' : '/'}${url}`;
+    };
 
     return (
         <div className="w-full relative">
@@ -75,7 +83,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                             {/* Image Area */}
                             <div className="relative z-30 w-full aspect-[2.61/1] rounded-[32px] overflow-hidden shadow-2xl bg-[#09090b]">
                                 <img
-                                    src={offer.imageUrl?.startsWith('http') ? offer.imageUrl : `${import.meta.env.VITE_API_URL || ''}${offer.imageUrl}`}
+                                    src={getImgUrl(offer.imageUrl)}
                                     alt={offer.name}
                                     className="w-full h-full object-cover"
                                 />

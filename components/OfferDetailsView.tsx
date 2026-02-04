@@ -11,6 +11,12 @@ interface OfferDetailsViewProps {
 export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBack, onJoin }) => {
     if (!offer) return null;
 
+    const getImgUrl = (url?: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `/api${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
     return (
         <div className="w-full flex flex-col pt-4 pb-24 animate-in slide-in-from-right duration-300 relative min-h-screen bg-[#09090b]">
 
@@ -26,7 +32,7 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-2xl bg-zinc-800 overflow-hidden shadow-lg border border-white/10 relative group">
                         <img
-                            src={(offer.avatarUrl || offer.imageUrl)?.startsWith('http') ? (offer.avatarUrl || offer.imageUrl) : `${import.meta.env.VITE_API_URL || ''}${offer.avatarUrl || offer.imageUrl}`}
+                            src={getImgUrl(offer.avatarUrl || offer.imageUrl)}
                             alt={offer.name}
                             className="w-full h-full object-cover"
                         />
