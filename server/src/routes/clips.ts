@@ -17,6 +17,9 @@ function detectPlatform(url: string): string | null {
 router.get('/', authMiddleware, async (req: AuthRequest, res) => {
     try {
         const { offerId, status } = req.query;
+        if (req.user) {
+            console.log(`🎥 Fetching clips for User ${req.user.id} (offerId=${offerId || 'all'}, status=${status || 'all'})`);
+        }
 
         const where: any = { userId: req.user!.id };
         if (offerId) where.offerId = offerId;

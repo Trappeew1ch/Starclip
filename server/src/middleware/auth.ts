@@ -98,6 +98,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     try {
         const userData = JSON.parse(validation.data.user || '{}');
         const telegramId = BigInt(userData.id);
+        console.log(`🔐 Auth attempt: telegramId=${userData.id} (BigInt=${telegramId})`);
 
         // Get or create user
         let user = await prisma.user.findUnique({
@@ -105,6 +106,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
         });
 
         if (!user) {
+            console.log(`👤 Creating new user for telegramId=${telegramId}`);
             user = await prisma.user.create({
                 data: {
                     telegramId,
@@ -114,6 +116,8 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
                     photoUrl: userData.photo_url
                 }
             });
+        } else {
+            console.log(`✅ User found: ID=${user.id}, Balance=${user.balance}, Clips=${(await prisma.clip.count({ where: { userId: user.id } }))}`);
         }
 
         req.user = {
