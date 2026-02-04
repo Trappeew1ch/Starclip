@@ -22,6 +22,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
     const getImgUrl = (url: string) => {
         if (!url) return '';
         if (url.startsWith('http')) return url;
+        if (url.startsWith('/api')) return url;
         // Ensure relative paths go through /api proxy/route if that's how they are served
         return `/api${url.startsWith('/') ? '' : '/'}${url}`;
     };

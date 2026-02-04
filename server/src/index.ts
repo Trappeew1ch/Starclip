@@ -41,8 +41,8 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '20mb' }));
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Serve uploaded files via API route so Nginx proxies it correctly
+app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

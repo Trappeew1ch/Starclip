@@ -14,6 +14,7 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
     const getImgUrl = (url?: string) => {
         if (!url) return '';
         if (url.startsWith('http')) return url;
+        if (url.startsWith('/api')) return url;
         return `/api${url.startsWith('/') ? '' : '/'}${url}`;
     };
 

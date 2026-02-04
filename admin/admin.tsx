@@ -436,7 +436,8 @@ function AdminPanel() {
     const getImgUrl = (url: string) => {
         if (!url) return '';
         if (url.startsWith('http')) return url;
-        return `${API_URL}${url}`;
+        if (url.startsWith('/api')) return url;
+        return `${API_URL}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     const handleToggleOffer = async (offerId: string) => {

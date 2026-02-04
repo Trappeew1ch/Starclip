@@ -76,8 +76,8 @@ router.post('/', authMiddleware, adminMiddleware, async (req: AuthRequest, res) 
         // Save file
         fs.writeFileSync(filePath, buffer);
 
-        // Return URL
-        const fileUrl = `/uploads/${newFilename}`;
+        // Return URL (via API proxy)
+        const fileUrl = `/api/uploads/${newFilename}`;
 
         res.json({
             success: true,

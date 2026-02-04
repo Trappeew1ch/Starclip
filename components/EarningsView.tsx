@@ -115,7 +115,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
             </div>
 
             {/* REFERRAL BANNER */}
-            <div className="w-full px-4 mb-8 relative z-10">
+            <div className="w-full mb-8 relative z-10">
                 <button
                     onClick={() => onNavigate('referral')}
                     className="w-full relative group overflow-hidden rounded-[20px] transition-transform active:scale-[0.98] shadow-lg border border-white/5"

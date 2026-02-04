@@ -263,70 +263,68 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
             )}
 
             {/* VERIFICATION BANNER */}
-            <div className="relative z-10 w-full mb-6">
+            <div className="relative z-10 w-full mb-8 px-1">
                 <button
                     onClick={() => setActiveModal('verification')}
-                    className="w-full relative group overflow-hidden rounded-[20px] shadow-[0_0_20px_rgba(59,130,246,0.15)] active:scale-[0.98] transition-transform"
+                    className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl shadow-blue-900/20 active:scale-[0.98] transition-transform"
                 >
+                    <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none transition-colors group-hover:bg-black/30"></div>
                     <img
                         src="/images/starclip-code.png"
                         alt="Получить код верификации"
-                        className="w-full h-auto object-cover"
+                        className="w-full h-auto object-cover relative z-0 scale-[1.02] group-hover:scale-105 transition-transform duration-500"
                     />
-                    {/* Hover effect */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-white/5 transition-colors"></div>
                 </button>
             </div>
 
             {/* VERIFICATION MODAL */}
             {activeModal === 'verification' && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-[#18181b] w-full max-w-sm rounded-[32px] p-6 border border-white/10 relative overflow-hidden">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-[#18181b] w-full max-w-sm rounded-[32px] p-6 border border-white/10 relative overflow-hidden shadow-2xl">
                         {/* Glow effect */}
-                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+                        <div className="absolute -top-32 -right-32 w-64 h-64 bg-blue-600/20 blur-[80px] rounded-full pointer-events-none"></div>
 
                         <button
                             onClick={() => setActiveModal(null)}
-                            className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-zinc-400"
+                            className="absolute top-5 right-5 p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors text-zinc-400 z-20"
                         >
                             <X size={20} />
                         </button>
 
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 text-blue-400 border border-blue-500/20">
-                                <ShieldCheck size={32} />
+                        <div className="flex flex-col items-center text-center relative z-10 pt-4">
+
+                            <h3 className="text-2xl font-bold text-white mb-3">Код автора</h3>
+
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 mb-6 text-left w-full">
+                                <p className="text-sm text-blue-100 leading-relaxed font-medium">
+                                    Только с этим кодом мы сможем подтвердить, что видео принадлежит вам, и начислить оплату.
+                                </p>
                             </div>
 
-                            <h3 className="text-xl font-bold text-white mb-2">Ваш код автора</h3>
-                            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-                                Чтобы мы засчитывали просмотры, вставьте этот код в <strong>самый конец</strong> описания видео.
-                                <br />
-                                <span className="text-xs text-zinc-500 mt-2 block bg-red-500/10 p-2 rounded text-red-300">
-                                    Важно: Без пробелов после кода!
-                                </span>
+                            <p className="text-sm text-zinc-400 mb-2">
+                                Вставьте код в <strong>самый конец</strong> описания:
                             </p>
 
-                            <div className="w-full bg-black/40 rounded-xl p-4 border border-white/5 mb-6 flex items-center justify-between gap-3">
-                                <code className="text-blue-400 font-mono font-bold text-lg tracking-wider">
-                                    {videos[0]?.verificationCode || '#SC-WAIT...'}
+                            <div className="w-full bg-black/60 rounded-xl p-2 pl-4 border border-white/10 mb-8 flex items-center justify-between gap-2">
+                                <code className="text-white font-mono font-bold text-lg tracking-wider truncate">
+                                    {videos[0]?.verificationCode || '#SC-LOADING'}
                                 </code>
                                 <button
                                     onClick={() => {
                                         const code = videos[0]?.verificationCode;
                                         if (code) {
                                             navigator.clipboard.writeText(code);
-                                            // Optional: visual feedback handled by button state or toast if we had one
                                         }
                                     }}
-                                    className="p-3 bg-blue-600/20 hover:bg-blue-600/30 rounded-lg text-blue-400 transition-colors"
+                                    className="px-4 py-3 bg-[#27272a] hover:bg-[#3f3f46] rounded-lg text-white font-medium transition-colors text-sm whitespace-nowrap border border-white/5"
                                 >
-                                    <Copy size={20} />
+                                    Скопировать
                                 </button>
                             </div>
 
                             <button
                                 onClick={() => setActiveModal(null)}
-                                className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-bold transition-all active:scale-[0.98] shadow-lg shadow-blue-600/20"
+                                className="w-full py-4 bg-white text-black rounded-xl font-bold text-base hover:bg-zinc-200 transition-colors active:scale-[0.98]"
                             >
                                 Всё понятно
                             </button>
@@ -396,7 +394,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
             </div>
 
             {/* --- MODALS --- */}
-            {activeModal && (
+            {activeModal && activeModal !== 'verification' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setActiveModal(null)}></div>
 
