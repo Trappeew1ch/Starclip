@@ -14,11 +14,32 @@ export interface TikTokVideoStats {
     duration: number;
 }
 
+import { getTikTokStatsRapid } from './rapidApi.js';
+
 /**
- * Parse TikTok video stats using yt-dlp
- * No API key or auth required
+ * Parse TikTok/YouTube stats
+ * Uses RapidAPI for TikTok, yt-dlp for others
  */
 export async function getTikTokStats(url: string): Promise<TikTokVideoStats | null> {
+    // Check if it's a TikTok URL
+    if (url.includes('tiktok.com')) {
+        try {
+            const rapidStats = await getTikTokStatsRapid(url);
+            if (rapidStats) {
+                return {
+                    ...rapidStats,
+                    uploader: '', // RapidAPI might not return uploader name in the same way, optional
+                    uploaderUrl: '',
+                    duration: 0
+                };
+            }
+            console.warn('⚠️ RapidAPI returned null, falling back to yt-dlp');
+        } catch (error) {
+            console.error('⚠️ RapidAPI failed, falling back to yt-dlp:', error);
+        }
+    }
+
+    // Fallback to yt-dlp logic (existing code)
     return new Promise((resolve) => {
         // Build yt-dlp arguments
         const args = [
