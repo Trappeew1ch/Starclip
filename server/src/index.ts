@@ -4,8 +4,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 
-// Load env vars
-dotenv.config();
+
 
 import { PrismaClient } from '@prisma/client';
 import { initBot } from './bot.js';
@@ -22,6 +21,12 @@ import { startStatsUpdateScheduler } from './jobs/updateVideoStats.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load env vars
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+dotenv.config({ path: path.join(__dirname, `../../${envFile}`) });
+console.log(`📂 Loaded environment from ${envFile}`);
+console.log(`🔑 RAPIDAPI_KEY present: ${!!process.env.RAPIDAPI_KEY}`);
 
 export const prisma = new PrismaClient();
 

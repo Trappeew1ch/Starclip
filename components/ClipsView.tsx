@@ -99,9 +99,16 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     };
 
     // Filter Logic
-    const filteredVideos = selectedAccount.id === 'all'
+    const filteredVideos = (selectedAccount.id === 'all'
         ? videos
-        : videos.filter(v => v.accountId === (selectedAccount as SocialAccount).platform);
+        : videos.filter(v => v.accountId === (selectedAccount as SocialAccount).platform)
+    ).sort((a, b) => {
+        // Processing first
+        if (a.status === 'processing' && b.status !== 'processing') return -1;
+        if (a.status !== 'processing' && b.status === 'processing') return 1;
+        // Then by date desc
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
 
     // Accepted videos only for "Recent Clips" section
     const recentAcceptedVideos = videos.filter(v => v.status === 'published');
