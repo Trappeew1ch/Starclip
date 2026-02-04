@@ -32,16 +32,22 @@ function AppContent() {
   const [selectedOffer, setSelectedOffer] = useState<any | null>(null);
   const [appReady, setAppReady] = useState(false);
 
-  // Load offers on mount and check URL
+  // Load offers on mount
   useEffect(() => {
     loadOffers();
-    loadCampaigns();
 
     // Check URL for direct navigation
     const path = window.location.pathname;
     if (path === '/terms') setCurrentView('terms');
     else if (path === '/privacy') setCurrentView('privacy');
   }, []);
+
+  // Load user-specific data when authenticated
+  useEffect(() => {
+    if (user) {
+      loadCampaigns();
+    }
+  }, [user]);
 
   // Show loading screen until data is loaded
   useEffect(() => {

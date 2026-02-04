@@ -75,7 +75,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                             {/* Image Area */}
                             <div className="relative z-30 w-full aspect-[2.61/1] rounded-[32px] overflow-hidden shadow-2xl bg-[#09090b]">
                                 <img
-                                    src={offer.imageUrl}
+                                    src={offer.imageUrl?.startsWith('http') ? offer.imageUrl : `${import.meta.env.VITE_API_URL || ''}${offer.imageUrl}`}
                                     alt={offer.name}
                                     className="w-full h-full object-cover"
                                 />

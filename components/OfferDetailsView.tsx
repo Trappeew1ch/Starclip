@@ -25,7 +25,11 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
                 {/* Header Info */}
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-2xl bg-zinc-800 overflow-hidden shadow-lg border border-white/10 relative group">
-                        <img src={offer.avatarUrl || offer.imageUrl} alt={offer.name} className="w-full h-full object-cover" />
+                        <img
+                            src={(offer.avatarUrl || offer.imageUrl)?.startsWith('http') ? (offer.avatarUrl || offer.imageUrl) : `${import.meta.env.VITE_API_URL || ''}${offer.avatarUrl || offer.imageUrl}`}
+                            alt={offer.name}
+                            className="w-full h-full object-cover"
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                     </div>
                     <div>
