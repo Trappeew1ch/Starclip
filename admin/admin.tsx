@@ -358,28 +358,29 @@ function AdminPanel() {
             let bannerUrl = offerForm.bannerUrl;
             if (bannerFile) {
                 bannerUrl = await uploadFile(bannerFile);
+                finalBannerUrl = await uploadFile(bannerFile);
             }
 
-            const body = {
+            const payload = {
                 ...offerForm,
-                bannerUrl,
-                totalBudget: parseFloat(offerForm.totalBudget),
-                cpmRate: parseFloat(offerForm.cpmRate),
-                daysLeft: parseInt(offerForm.daysLeft),
+                imageUrl: finalImageUrl,
+                avatarUrl: finalAvatarUrl,
+                bannerUrl: finalBannerUrl,
+                totalBudget: Number(offerForm.totalBudget),
+                cpmRate: Number(offerForm.cpmRate),
+                daysLeft: Number(offerForm.daysLeft),
                 requirements: offerForm.requirements.split('\n').filter(r => r.trim())
             };
 
             if (editingOfferId) {
-                // Update
                 await adminRequest(`/admin/offers/${editingOfferId}`, {
                     method: 'PUT',
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(payload)
                 });
             } else {
-                // Create
                 await adminRequest('/admin/offers', {
                     method: 'POST',
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(payload)
                 });
             }
 
@@ -390,6 +391,11 @@ function AdminPanel() {
                 totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
                 description: '', requirements: '', assetsLink: '', daysLeft: '30'
             });
+            // Reset files and previews
+            setImageFile(null);
+            setImagePreview('');
+            setAvatarFile(null);
+            setAvatarPreview('');
             setBannerFile(null);
             setBannerPreview('');
             loadData();
@@ -789,6 +795,10 @@ function AdminPanel() {
                                             totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
                                             description: '', requirements: '', assetsLink: '', daysLeft: '30'
                                         });
+                                        setImageFile(null);
+                                        setImagePreview('');
+                                        setAvatarFile(null);
+                                        setAvatarPreview('');
                                         setShowOfferForm(true);
                                     }}
                                     className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium text-sm transition-colors"
@@ -1029,70 +1039,88 @@ function AdminPanel() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-zinc-500 mb-2">URL изображения *</label>
-                                    <input
-                                        type="url"
-                                        value={offerForm.imageUrl}
-                                        onChange={(e) => setOfferForm({ ...offerForm, imageUrl: e.target.value })}
-                                        placeholder="https://..."
-                                        required
-                                        className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-zinc-500 mb-2">URL аватара</label>
-                                    <input
-                                        type="url"
-                                        value={offerForm.avatarUrl}
-                                        onChange={(e) => setOfferForm({ ...offerForm, avatarUrl: e.target.value })}
-                                        placeholder="https://..."
-                                        className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                    />
-                                </div>
-                            </div>
 
-                            {/* Banner Upload */}
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
-                                    <Upload size={14} />
-                                    Баннер оффера (загрузить файл)
-                                </label>
-                                <div className="flex gap-3">
-                                    <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-zinc-800 border border-dashed border-white/10 rounded-lg text-zinc-400 hover:border-blue-500/50 hover:text-blue-400 cursor-pointer transition-colors">
-                                        <Upload size={18} />
-                                        <span>{bannerFile ? bannerFile.name : 'Выбрать файл...'}</span>
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/webp,image/gif"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setBannerFile(file);
-                                                    setBannerPreview(URL.createObjectURL(file));
-                                                    setOfferForm({ ...offerForm, bannerUrl: '' });
-                                                }
-                                            }}
-                                            className="hidden"
-                                        />
+                            <div className="grid grid-cols-2 gap-6">
+                                {/* Main Image Upload */}
+                                <div>
+                                    <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
+                                        <Image size={14} />
+                                        Главное изображение *
                                     </label>
-                                    {bannerPreview && (
-                                        <img src={bannerPreview} alt="Preview" className="h-12 w-24 object-cover rounded-lg border border-white/10" />
-                                    )}
+                                    <div className="space-y-2">
+                                        <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
+                                            {(imagePreview || offerForm.imageUrl) ? (
+                                                <img
+                                                    src={imagePreview || getImgUrl(offerForm.imageUrl)}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
+                                                    <Upload size={24} className="mb-2" />
+                                                    <p className="text-xs">Загрузить файл</p>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                required={!offerForm.imageUrl && !imageFile}
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setImageFile(file);
+                                                        setImagePreview(URL.createObjectURL(file));
+                                                    }
+                                                }}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                        <p className="text-[10px] text-zinc-600 text-center">Отображается в ленте офферов</p>
+                                    </div>
                                 </div>
-                                <p className="text-xs text-zinc-600 mt-1">Или укажите URL:</p>
-                                <input
-                                    type="url"
-                                    value={offerForm.bannerUrl}
-                                    onChange={(e) => {
-                                        setOfferForm({ ...offerForm, bannerUrl: e.target.value });
-                                        setBannerFile(null);
-                                        setBannerPreview('');
-                                    }}
-                                    placeholder="https://..."
-                                    className="w-full mt-1 px-4 py-2 bg-zinc-800/50 border border-white/5 rounded-lg text-white text-sm"
-                                />
+
+                                {/* Avatar Upload */}
+                                <div>
+                                    <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
+                                        <Users size={14} />
+                                        Аватар *
+                                    </label>
+                                    <div className="space-y-2">
+                                        <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
+                                            {(avatarPreview || offerForm.avatarUrl) ? (
+                                                <img
+                                                    src={avatarPreview || getImgUrl(offerForm.avatarUrl)}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
+                                                    <Upload size={24} className="mb-2" />
+                                                    <p className="text-xs">Загрузить файл</p>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        setAvatarFile(file);
+                                                        setAvatarPreview(URL.createObjectURL(file));
+                                                    }
+                                                }}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                        <p className="text-[10px] text-zinc-600 text-center">Иконка канала/блогера</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div>
