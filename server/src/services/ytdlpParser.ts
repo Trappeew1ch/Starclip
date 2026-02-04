@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { getTikTokStatsRapid } from './rapidApi.js';
 
 export interface TikTokVideoStats {
     id: string;
@@ -13,8 +13,6 @@ export interface TikTokVideoStats {
     title: string;
     duration: number;
 }
-
-import { getTikTokStatsRapid } from './rapidApi.js';
 
 /**
  * Parse TikTok/YouTube stats
@@ -33,77 +31,17 @@ export async function getTikTokStats(url: string): Promise<TikTokVideoStats | nu
                     duration: 0
                 };
             }
-            console.warn('⚠️ RapidAPI returned null, falling back to yt-dlp');
         } catch (error) {
-            console.error('⚠️ RapidAPI failed, falling back to yt-dlp:', error);
+            console.error('⚠️ RapidAPI failed:', error);
         }
     }
 
-    // Fallback to yt-dlp logic (existing code)
-    return new Promise((resolve) => {
-        // Build yt-dlp arguments
-        const args = [
-            '--dump-json',
-            '--no-download',
-            '--no-warnings'
-        ];
+    // yt-dlp support removed as per request
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        console.warn(`⚠️ YouTube stats fetching is currently disabled (yt-dlp removed). URL: ${url}`);
+    }
 
-
-
-        args.push(url);
-
-        const proc = spawn('yt-dlp', args);
-
-        let output = '';
-        let errorOutput = '';
-
-        proc.stdout.on('data', (data) => {
-            output += data.toString();
-        });
-
-        proc.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
-
-        proc.on('close', (code) => {
-            if (code !== 0) {
-                console.error(`yt-dlp error for ${url}:`, errorOutput);
-                return resolve(null);
-            }
-
-            try {
-                const json = JSON.parse(output);
-                resolve({
-                    id: json.id || '',
-                    views: json.view_count || 0,
-                    likes: json.like_count || 0,
-                    comments: json.comment_count || 0,
-                    reposts: json.repost_count || 0,
-                    description: json.description || '',
-                    uploader: json.uploader || json.creator || '',
-                    uploaderUrl: json.uploader_url || json.channel_url || '',
-                    thumbnailUrl: json.thumbnail || '',
-                    title: json.title || json.fulltitle || '',
-                    duration: json.duration || 0
-                });
-            } catch (parseError) {
-                console.error(`yt-dlp JSON parse error for ${url}:`, parseError);
-                resolve(null);
-            }
-        });
-
-        proc.on('error', (err) => {
-            console.error(`yt-dlp spawn error:`, err);
-            resolve(null);
-        });
-
-        // Timeout after 30 seconds
-        setTimeout(() => {
-            proc.kill('SIGTERM');
-            console.error(`yt-dlp timeout for ${url}`);
-            resolve(null);
-        }, 30000);
-    });
+    return null;
 }
 
 /**
