@@ -1,7 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+
+// Load env vars
+dotenv.config();
+
 import { PrismaClient } from '@prisma/client';
 import { initBot } from './bot.js';
 import authRoutes from './routes/auth.js';
