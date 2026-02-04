@@ -51,7 +51,7 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
                 date: formatRelativeDate(clip.createdAt)
             }));
 
-        res.json({
+        const responseData = {
             balance: user?.balance || 0,
             profiles: accounts.length,
             videos: totalVideos,
@@ -59,7 +59,9 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
             totalViews,
             avgViews,
             topClips
-        });
+        };
+        console.log(`stats for user ${userId}: balance=${responseData.balance}, clips=${responseData.videos}`);
+        res.json(responseData);
     } catch (error) {
         console.error('Get stats error:', error);
         res.status(500).json({ error: 'Server error' });

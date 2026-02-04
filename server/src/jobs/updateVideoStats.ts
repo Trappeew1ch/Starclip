@@ -55,49 +55,51 @@ export async function updateClipsWithYtdlp() {
                     const viewsDiff = newViews - previousViews;
                     const additionalEarnings = (viewsDiff / 1000) * clip.offer.cpmRate;
 
-                    // Update clip stats
-                    await prisma.clip.update({
-                        where: { id: clip.id },
-                        data: {
-                            views: newViews,
-                            likes: stats.likes,
-                            comments: stats.comments,
-                            thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
-                            title: stats.title || clip.title,
-                            isVerified: true,
-                            earnedAmount: clip.earnedAmount + additionalEarnings,
-                            lastStatsFetch: new Date()
-                        }
-                    });
-
-                    // Add earnings to user balance
-                    await prisma.user.update({
-                        where: { id: clip.userId },
-                        data: {
-                            balance: { increment: additionalEarnings }
-                        }
-                    });
-
-                    // Create transaction record
-                    if (additionalEarnings > 0) {
-                        await prisma.transaction.create({
+                    // Use transaction for atomic updates
+                    await prisma.$transaction([
+                        // Update clip stats
+                        prisma.clip.update({
+                            where: { id: clip.id },
                             data: {
-                                userId: clip.userId,
-                                clipId: clip.id,
-                                amount: additionalEarnings,
-                                type: 'earning',
-                                status: 'completed'
+                                views: newViews,
+                                likes: stats.likes,
+                                comments: stats.comments,
+                                thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
+                                title: stats.title || clip.title,
+                                isVerified: true,
+                                earnedAmount: clip.earnedAmount + additionalEarnings,
+                                lastStatsFetch: new Date()
                             }
-                        });
-                    }
+                        }),
+                        // Add earnings to user balance
+                        prisma.user.update({
+                            where: { id: clip.userId },
+                            data: {
+                                balance: { increment: additionalEarnings }
+                            }
+                        }),
+                        // Update offer paidOut
+                        prisma.offer.update({
+                            where: { id: clip.offerId },
+                            data: {
+                                paidOut: { increment: additionalEarnings }
+                            }
+                        }),
+                        // Create transaction record (only if earned > 0)
+                        ...(additionalEarnings > 0 ? [
+                            prisma.transaction.create({
+                                data: {
+                                    userId: clip.userId,
+                                    clipId: clip.id,
+                                    amount: additionalEarnings,
+                                    type: 'earning',
+                                    status: 'completed'
+                                }
+                            })
+                        ] : [])
+                    ]);
 
-                    // Update offer paidOut
-                    await prisma.offer.update({
-                        where: { id: clip.offerId },
-                        data: {
-                            paidOut: { increment: additionalEarnings }
-                        }
-                    });
+
 
                     console.log(`✅ Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽`);
                     updatedCount++;

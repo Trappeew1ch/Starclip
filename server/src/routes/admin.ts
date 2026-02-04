@@ -210,44 +210,44 @@ router.post('/clips/:id/approve', async (req, res) => {
         // Calculate earnings: views / 1000 * CPM rate
         const earnedAmount = (views / 1000) * clip.offer.cpmRate;
 
-        // Update clip - always set isVerified=true when admin approves
-        const updatedClip = await prisma.clip.update({
-            where: { id: clipId },
-            data: {
-                status: 'approved',
-                views,
-                earnedAmount,
-                isVerified: true // Admin approval = verified
-            }
-        });
+        // Create transaction to ensure all updates happen or none
+        const [updatedClip] = await prisma.$transaction([
+            // Update clip
+            prisma.clip.update({
+                where: { id: clipId },
+                data: {
+                    status: 'approved',
+                    views: Number(views),
+                    earnedAmount,
+                    isVerified: true // Admin approval = verified
+                }
+            }),
+            // Update user balance
+            prisma.user.update({
+                where: { id: clip.userId },
+                data: {
+                    balance: { increment: earnedAmount }
+                }
+            }),
+            // Update offer paidOut
+            prisma.offer.update({
+                where: { id: clip.offerId },
+                data: {
+                    paidOut: { increment: earnedAmount }
+                }
+            }),
+            // Create transaction record
+            prisma.transaction.create({
+                data: {
+                    userId: clip.userId,
+                    clipId: clip.id,
+                    amount: earnedAmount,
+                    type: 'earning'
+                }
+            })
+        ]);
 
-        // Update user balance
-        await prisma.user.update({
-            where: { id: clip.userId },
-            data: {
-                balance: { increment: earnedAmount }
-            }
-        });
-
-        // Update offer paidOut
-        await prisma.offer.update({
-            where: { id: clip.offerId },
-            data: {
-                paidOut: { increment: earnedAmount }
-            }
-        });
-
-        // Create transaction
-        await prisma.transaction.create({
-            data: {
-                userId: clip.userId,
-                clipId: clip.id,
-                amount: earnedAmount,
-                type: 'earning'
-            }
-        });
-
-        // Send notification
+        // Send notification (outside transaction)
         await notifyClipApproved(clip.userId, clip.title || 'Клип', earnedAmount);
 
         res.json({
