@@ -9,6 +9,7 @@ import { ClipsView } from './components/ClipsView';
 import { OfferDetailsView } from './components/OfferDetailsView';
 import { TermsView } from './components/TermsView';
 import { PrivacyView } from './components/PrivacyView';
+import { AdminView } from './components/AdminView';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ReferralView } from './components/ReferralView';
 import { BannerSlide, ViewType } from './types';
@@ -115,6 +116,8 @@ function AppContent() {
         return <PrivacyView onBack={handleBack} />;
       case 'referral':
         return <ReferralView onBack={() => setCurrentView('earnings')} />;
+      case 'admin':
+        return <AdminView />;
       default:
         return null;
     }

@@ -26,15 +26,38 @@ export async function processClipStats(clipId: string, stats: TikTokVideoStats) 
     const previousViews = clip.views || 0;
     let additionalEarnings = 0;
     let viewsDiff = 0;
+    let shouldDeactivateOffer = false;
 
-    // Only count views if clip is verified and views increased
-    if (isVerified && newViews > previousViews) {
+    // Only count views if clip is verified and views increased (AND offer is active)
+    if (isVerified && newViews > previousViews && clip.offer.isActive) {
         viewsDiff = newViews - previousViews;
         // Calculate earnings: (Views Diff / 1000) * Rate per 1000 views
-        additionalEarnings = (viewsDiff / 1000) * clip.offer.cpmRate; // assuming cpmRate is per 1000 views
+        let potentialEarnings = (viewsDiff / 1000) * clip.offer.cpmRate;
+
+        // Check budget capability
+        const currentPaidOut = clip.offer.paidOut || 0;
+        const totalBudget = clip.offer.totalBudget;
+
+        // If we are over budget or hitting it
+        if (currentPaidOut < totalBudget) {
+            // Cap earnings if they exceed remaining budget
+            if (currentPaidOut + potentialEarnings >= totalBudget) {
+                additionalEarnings = totalBudget - currentPaidOut;
+                // Deactivate offer as budget is depleted
+                shouldDeactivateOffer = true;
+            } else {
+                additionalEarnings = potentialEarnings;
+            }
+        } else {
+            // Budget already exhausted, shouldn't be here if isActive check works, but double safety
+            additionalEarnings = 0;
+            shouldDeactivateOffer = true;
+        }
+    } else if (!clip.offer.isActive && isVerified && newViews > previousViews) {
+        console.log(`⚠️ Clip ${clip.id}: Offer is inactive/out of budget. No earnings added.`);
     }
 
-    if (additionalEarnings > 0) {
+    if (additionalEarnings > 0 || shouldDeactivateOffer) {
         // Atomic update with transaction
         await prisma.$transaction([
             // Update clip stats
@@ -51,31 +74,44 @@ export async function processClipStats(clipId: string, stats: TikTokVideoStats) 
                     lastStatsFetch: new Date()
                 }
             }),
-            // Add earnings to user balance
-            prisma.user.update({
-                where: { id: clip.userId },
-                data: {
-                    balance: { increment: additionalEarnings }
-                }
-            }),
-            // Update offer paidOut
-            prisma.offer.update({
-                where: { id: clip.offerId },
-                data: {
-                    paidOut: { increment: additionalEarnings }
-                }
-            }),
-            // Create transaction record
-            prisma.transaction.create({
-                data: {
-                    userId: clip.userId,
-                    clipId: clip.id,
-                    amount: additionalEarnings,
-                    type: 'earning',
-                    status: 'completed'
-                }
-            })
+            // Add earnings to user balance (only if positive)
+            ...(additionalEarnings > 0 ? [
+                prisma.user.update({
+                    where: { id: clip.userId },
+                    data: {
+                        balance: { increment: additionalEarnings }
+                    }
+                }),
+                // Update offer paidOut
+                prisma.offer.update({
+                    where: { id: clip.offerId },
+                    data: {
+                        paidOut: { increment: additionalEarnings },
+                        isActive: shouldDeactivateOffer ? false : undefined // Deactivate if flag set
+                    }
+                }),
+                // Create transaction record
+                prisma.transaction.create({
+                    data: {
+                        userId: clip.userId,
+                        clipId: clip.id,
+                        amount: additionalEarnings,
+                        type: 'earning',
+                        status: 'completed'
+                    }
+                })
+            ] : [
+                // If 0 earnings but we need to deactivate
+                prisma.offer.update({
+                    where: { id: clip.offerId },
+                    data: {
+                        isActive: false
+                    }
+                })
+            ])
         ]);
+        console.log(`💰 Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽ ${shouldDeactivateOffer ? '(OFFER CLOSED)' : ''}`);
+    } else {
         console.log(`💰 Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽`);
     } else {
         // Just update stats without earnings

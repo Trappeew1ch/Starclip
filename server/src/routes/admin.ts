@@ -157,6 +157,56 @@ router.get('/users/:id', async (req, res) => {
     }
 });
 
+// Payout to user (Reset Balance)
+router.post('/users/:id/payout', async (req, res) => {
+    try {
+        const userId = parseInt(req.params.id);
+        const { amount, method, note } = req.body; // Optional details about the payout
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const payoutAmount = amount || user.balance;
+
+        if (payoutAmount <= 0) {
+            return res.status(400).json({ error: 'No balance to payout' });
+        }
+
+        await prisma.$transaction([
+            // Reset balance (subtract payout amount)
+            prisma.user.update({
+                where: { id: userId },
+                data: {
+                    balance: { decrement: payoutAmount }
+                }
+            }),
+            // Create transaction record
+            prisma.transaction.create({
+                data: {
+                    userId,
+                    amount: -payoutAmount, // Negative for payout
+                    type: 'payout',
+                    status: 'completed'
+                }
+            })
+        ]);
+
+        res.json({
+            message: 'Payout processed',
+            payoutAmount,
+            remainingBalance: user.balance - payoutAmount
+        });
+    } catch (error) {
+        console.error('Payout error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 // Get pending clips for moderation
 router.get('/clips/pending', async (req, res) => {
     try {

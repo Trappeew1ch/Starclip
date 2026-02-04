@@ -125,7 +125,13 @@ export const adminApi = {
         return apiRequest<any>(`/admin/users?${params}`);
     },
 
-    getUserById: (id: number) => apiRequest<any>(`/admin/users/${id}`),
+    getUserDetails: (id: number) => apiRequest<any>(`/admin/users/${id}`),
+
+    payoutUser: (id: number, amount: number) =>
+        apiRequest<any>(`/admin/users/${id}/payout`, {
+            method: 'POST',
+            body: JSON.stringify({ amount })
+        }),
 
     getPendingClips: () => apiRequest<any[]>('/admin/clips/pending'),
 
