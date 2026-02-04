@@ -82,6 +82,7 @@ export interface AccountVideo {
   videoUrl?: string;
   verificationCode?: string;
   isVerified?: boolean;
+  earnedAmount?: number;
 }
 
 export interface SocialAccount {
