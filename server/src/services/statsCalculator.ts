@@ -112,8 +112,6 @@ export async function processClipStats(clipId: string, stats: TikTokVideoStats) 
         ]);
         console.log(`💰 Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽ ${shouldDeactivateOffer ? '(OFFER CLOSED)' : ''}`);
     } else {
-        console.log(`💰 Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽`);
-    } else {
         // Just update stats without earnings
         await prisma.clip.update({
             where: { id: clip.id },
