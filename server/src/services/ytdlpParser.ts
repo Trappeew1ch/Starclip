@@ -48,12 +48,7 @@ export async function getTikTokStats(url: string): Promise<TikTokVideoStats | nu
             '--no-warnings'
         ];
 
-        // Add proxy if configured
-        const proxyUrl = process.env.YTDLP_PROXY;
-        if (proxyUrl) {
-            args.push('--proxy', proxyUrl);
-            console.log(`🔒 Using proxy for yt-dlp: ${proxyUrl.split('@')[1] || proxyUrl}`);
-        }
+
 
         args.push(url);
 
