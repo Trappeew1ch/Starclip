@@ -1,5 +1,6 @@
 import { prisma } from '../index.js';
-import { getTikTokStats, verifyHashtag } from '../services/ytdlpParser.js';
+import { getTikTokStats } from '../services/ytdlpParser.js';
+import { processClipStats } from '../services/statsCalculator.js';
 
 /**
  * Update stats for all approved TikTok/YouTube clips using yt-dlp
@@ -37,95 +38,21 @@ export async function updateClipsWithYtdlp() {
                     continue;
                 }
 
-                // Check verification status
-                let isVerified = clip.isVerified;
-                if (!isVerified && clip.verificationCode) {
-                    isVerified = verifyHashtag(stats.description, clip.verificationCode);
-                    if (isVerified) {
-                        verifiedCount++;
-                        console.log(`✅ Clip ${clip.id}: Verified with hashtag ${clip.verificationCode}`);
+                if (stats) {
+                    const result = await processClipStats(clip.id, stats);
+                    if (result) {
+                        if (result.additionalEarnings > 0) {
+                            updatedCount++;
+                            earningsAdded += result.additionalEarnings;
+                        }
+                        if (result.isVerified && !clip.isVerified) {
+                            verifiedCount++;
+                        }
                     }
                 }
 
-                const newViews = stats.views;
-                const previousViews = clip.views;
-
-                // Only count views if clip is verified
-                if (isVerified && newViews > previousViews) {
-                    const viewsDiff = newViews - previousViews;
-                    const additionalEarnings = (viewsDiff / 1000) * clip.offer.cpmRate;
-
-                    // Use transaction for atomic updates
-                    await prisma.$transaction([
-                        // Update clip stats
-                        prisma.clip.update({
-                            where: { id: clip.id },
-                            data: {
-                                views: newViews,
-                                likes: stats.likes,
-                                comments: stats.comments,
-                                thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
-                                title: stats.title || clip.title,
-                                isVerified: true,
-                                earnedAmount: clip.earnedAmount + additionalEarnings,
-                                lastStatsFetch: new Date()
-                            }
-                        }),
-                        // Add earnings to user balance
-                        prisma.user.update({
-                            where: { id: clip.userId },
-                            data: {
-                                balance: { increment: additionalEarnings }
-                            }
-                        }),
-                        // Update offer paidOut
-                        prisma.offer.update({
-                            where: { id: clip.offerId },
-                            data: {
-                                paidOut: { increment: additionalEarnings }
-                            }
-                        }),
-                        // Create transaction record (only if earned > 0)
-                        ...(additionalEarnings > 0 ? [
-                            prisma.transaction.create({
-                                data: {
-                                    userId: clip.userId,
-                                    clipId: clip.id,
-                                    amount: additionalEarnings,
-                                    type: 'earning',
-                                    status: 'completed'
-                                }
-                            })
-                        ] : [])
-                    ]);
-
-
-
-                    console.log(`✅ Clip ${clip.id}: +${viewsDiff} views, +${additionalEarnings.toFixed(2)} ₽`);
-                    updatedCount++;
-                    earningsAdded += additionalEarnings;
-                } else if (!isVerified) {
-                    // Still update basic info but don't count earnings
-                    await prisma.clip.update({
-                        where: { id: clip.id },
-                        data: {
-                            views: newViews,
-                            likes: stats.likes,
-                            comments: stats.comments,
-                            thumbnailUrl: stats.thumbnailUrl || clip.thumbnailUrl,
-                            title: stats.title || clip.title,
-                            isVerified,
-                            lastStatsFetch: new Date()
-                        }
-                    });
-                    console.log(`⏳ Clip ${clip.id}: Updated stats (not verified yet)`);
-                } else {
-                    // Just update last fetch time
-                    await prisma.clip.update({
-                        where: { id: clip.id },
-                        data: { lastStatsFetch: new Date() }
-                    });
-                }
+                // Rate limiting - wait 3 seconds between requests
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
                 // Rate limiting - wait 3 seconds between requests
                 await new Promise(resolve => setTimeout(resolve, 3000));

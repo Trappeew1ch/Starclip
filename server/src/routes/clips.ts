@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest } from '../middleware/auth.js';
 import { generateVerificationCode, getTikTokStats, verifyHashtag } from '../services/ytdlpParser.js';
+import { processClipStats } from '../services/statsCalculator.js';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res) => {
             videoUrl: clip.videoUrl,
             verificationCode: clip.verificationCode,
             isVerified: clip.isVerified,
+            earnedAmount: clip.earnedAmount,
             aiData: clip.status === 'approved' ? {
                 score: 85,
                 category: 'Content',
@@ -97,10 +99,19 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
             });
         }
 
+        // Check for duplicate video URL
+        const existingClip = await prisma.clip.findFirst({
+            where: { videoUrl }
+        });
+
+        if (existingClip) {
+            return res.status(400).json({ error: 'This video has already been submitted' });
+        }
+
         // Generate unique verification code
         const verificationCode = generateVerificationCode(offerId);
 
-        // Create clip IMMEDIATELY (don't wait for yt-dlp)
+        // Create clip IMMEDIATELY
         const clip = await prisma.clip.create({
             data: {
                 userId: req.user!.id,
@@ -131,17 +142,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
         if (platform === 'tiktok' || platform === 'youtube') {
             getTikTokStats(videoUrl).then(async (stats) => {
                 if (stats) {
-                    await prisma.clip.update({
-                        where: { id: clip.id },
-                        data: {
-                            thumbnailUrl: stats.thumbnailUrl,
-                            title: stats.title,
-                            views: stats.views,
-                            likes: stats.likes,
-                            comments: stats.comments
-                        }
-                    });
-                    console.log(`📊 Stats fetched for clip ${clip.id}: ${stats.views} views`);
+                    await processClipStats(clip.id, stats);
                 }
             }).catch(err => {
                 console.log(`⚠️ Background stats fetch failed for clip ${clip.id}:`, err.message);
