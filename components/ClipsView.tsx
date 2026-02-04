@@ -99,10 +99,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
     };
 
     // Filter Logic
-    const filteredVideos = (selectedAccount.id === 'all'
-        ? videos
-        : videos.filter(v => v.accountId === (selectedAccount as SocialAccount).platform)
-    ).sort((a, b) => {
+    const filteredVideos = videos.sort((a, b) => {
         // Processing first
         if (a.status === 'processing' && b.status !== 'processing') return -1;
         if (a.status !== 'processing' && b.status === 'processing') return 1;
@@ -290,43 +287,10 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                 </div>
             </div>
 
-            {/* 3. ACCOUNT & VIDEOS (Filtering) */}
-            <div className="relative z-10 opacity-90">
-                <div className="mb-4">
-                    <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)} className="w-full glass-panel bg-[#18181b]/60 rounded-xl p-3 flex items-center justify-between border-white/10 active:scale-[0.99] transition-transform">
-                        <div className="flex items-center gap-3">
-                            {'platform' in selectedAccount ? (
-                                <div className="w-8 h-8 rounded-full bg-zinc-800/80 flex items-center justify-center">
-                                    {renderPlatformIcon(selectedAccount.platform, "w-5 h-5")}
-                                </div>
-                            ) : (
-                                <div className="w-8 h-8 rounded-full bg-zinc-800/80 flex items-center justify-center text-white"><LayoutList size={16} /></div>
-                            )}
-                            <span className="text-white font-medium text-sm">{selectedAccount.name}</span>
-                        </div>
-                        <ChevronDown size={18} className={`text-zinc-400 transition-transform ${isAccountMenuOpen ? 'rotate-180' : ''}`} />
-                    </button>
 
-                    {isAccountMenuOpen && (
-                        <div className="mt-2 glass-panel bg-[#09090b] border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-                            <button onClick={() => { setSelectedAccount({ id: 'all', name: 'Все аккаунты' }); setIsAccountMenuOpen(false); }} className="w-full p-3 flex items-center gap-3 hover:bg-white/5 transition-colors border-b border-white/5">
-                                <div className="w-6 h-6 flex items-center justify-center"><LayoutList size={16} className="text-zinc-400" /></div>
-                                <span className="text-sm text-zinc-300">Все аккаунты</span>
-                            </button>
-                            {accounts.map(acc => (
-                                <button key={acc.id} onClick={() => { setSelectedAccount(acc); setIsAccountMenuOpen(false); }} className="w-full p-3 flex items-center justify-between hover:bg-white/5 transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-6 h-6 flex items-center justify-center">{renderPlatformIcon(acc.platform, "w-4 h-4")}</div>
-                                        <span className={`text-sm ${selectedAccount.id === acc.id ? 'text-white' : 'text-zinc-400'}`}>{acc.name}</span>
-                                    </div>
-                                </button>
-                            ))}
-                            <button onClick={() => setActiveModal('connect')} className="w-full p-3 flex items-center justify-center gap-2 hover:bg-blue-500/10 transition-colors bg-blue-500/5 text-blue-400 font-medium text-sm">
-                                <Plus size={14} /> Подключить аккаунт
-                            </button>
-                        </div>
-                    )}
-                </div>
+            {/* 3. CLIPS LIST */}
+            <div className="relative z-10 opacity-90">
+
 
                 {/* Filtered Video List */}
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mr-4 pr-4 snap-x">

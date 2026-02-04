@@ -460,4 +460,30 @@ router.post('/offers/:id/toggle', async (req, res) => {
     }
 });
 
+// Get all offers (admin view - includes inactive)
+
+// Get all offers (admin view - includes inactive)
+router.get('/offers', async (req, res) => {
+    try {
+        const offers = await prisma.offer.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Calculate paidOutPercentage
+        const offersWithProgress = offers.map(offer => ({
+            ...offer,
+            platforms: JSON.parse(offer.platforms),
+            requirements: offer.requirements ? JSON.parse(offer.requirements) : [],
+            paidOutPercentage: offer.totalBudget > 0
+                ? (offer.paidOut / offer.totalBudget) * 100
+                : 0,
+        }));
+
+        res.json(offersWithProgress);
+    } catch (error) {
+        console.error('Get admin offers error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 export default router;

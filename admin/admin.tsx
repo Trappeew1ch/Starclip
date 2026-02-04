@@ -281,7 +281,7 @@ function AdminPanel() {
                 const usersData = await adminRequest<any>(`/admin/users?${params}`);
                 setUsers(usersData.users);
             } else if (activeTab === 'offers') {
-                const offersData = await adminRequest<any[]>('/offers');
+                const offersData = await adminRequest<any[]>('/admin/offers');
                 setOffers(offersData);
             }
         } catch (error) {
@@ -326,7 +326,30 @@ function AdminPanel() {
         }
     };
 
-    const handleCreateOffer = async (e: React.FormEvent) => {
+    const [editingOfferId, setEditingOfferId] = useState<string | null>(null);
+
+    const handleEditOffer = (offer: any) => {
+        setEditingOfferId(offer.id);
+        setOfferForm({
+            name: offer.name,
+            title: offer.title,
+            type: offer.type,
+            imageUrl: offer.imageUrl,
+            avatarUrl: offer.avatarUrl || '',
+            bannerUrl: offer.bannerUrl || '',
+            totalBudget: offer.totalBudget.toString(),
+            cpmRate: offer.cpmRate.toString(),
+            language: offer.language,
+            platforms: offer.platforms,
+            description: offer.description || '',
+            requirements: Array.isArray(offer.requirements) ? offer.requirements.join('\n') : '',
+            assetsLink: offer.assetsLink || '',
+            daysLeft: offer.daysLeft.toString()
+        });
+        setShowOfferForm(true);
+    };
+
+    const handleCreateOrUpdateOffer = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             setIsUploading(true);
@@ -337,18 +360,31 @@ function AdminPanel() {
                 bannerUrl = await uploadFile(bannerFile);
             }
 
-            await adminRequest('/admin/offers', {
-                method: 'POST',
-                body: JSON.stringify({
-                    ...offerForm,
-                    bannerUrl,
-                    totalBudget: parseFloat(offerForm.totalBudget),
-                    cpmRate: parseFloat(offerForm.cpmRate),
-                    daysLeft: parseInt(offerForm.daysLeft),
-                    requirements: offerForm.requirements.split('\n').filter(r => r.trim())
-                })
-            });
+            const body = {
+                ...offerForm,
+                bannerUrl,
+                totalBudget: parseFloat(offerForm.totalBudget),
+                cpmRate: parseFloat(offerForm.cpmRate),
+                daysLeft: parseInt(offerForm.daysLeft),
+                requirements: offerForm.requirements.split('\n').filter(r => r.trim())
+            };
+
+            if (editingOfferId) {
+                // Update
+                await adminRequest(`/admin/offers/${editingOfferId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
+            } else {
+                // Create
+                await adminRequest('/admin/offers', {
+                    method: 'POST',
+                    body: JSON.stringify(body)
+                });
+            }
+
             setShowOfferForm(false);
+            setEditingOfferId(null);
             setOfferForm({
                 name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
                 totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
@@ -358,7 +394,7 @@ function AdminPanel() {
             setBannerPreview('');
             loadData();
         } catch (error: any) {
-            alert(error.message || 'Ошибка при создании оффера');
+            alert(error.message || 'Ошибка при сохранении оффера');
         } finally {
             setIsUploading(false);
         }
@@ -370,6 +406,29 @@ function AdminPanel() {
             setSelectedUser(userData);
         } catch (error) {
             console.error('Failed to load user:', error);
+        }
+    };
+
+    const [payoutAmount, setPayoutAmount] = useState('');
+
+    const handlePayout = async () => {
+        if (!selectedUser) return;
+        const amount = parseFloat(payoutAmount);
+        if (isNaN(amount) || amount <= 0) return alert('Введите корректную сумму');
+        if (amount > selectedUser.balance) return alert('Сумма превышает текущий баланс');
+
+        if (!confirm(`Обнулить баланс на сумму ${amount} ₽?`)) return;
+
+        try {
+            await adminRequest(`/admin/users/${selectedUser.id}/payout`, {
+                method: 'POST',
+                body: JSON.stringify({ amount })
+            });
+            alert('Выплата проведена');
+            setPayoutAmount('');
+            handleUserClick(selectedUser.id); // Reload user
+        } catch (error: any) {
+            alert(error.message || 'Ошибка выплаты');
         }
     };
 
@@ -649,6 +708,24 @@ function AdminPanel() {
                                     </div>
                                 </div>
 
+                                {/* PAYOUT SECTION */}
+                                <div className="mb-6 bg-zinc-800/30 p-4 rounded-xl border border-white/5">
+                                    <h4 className="font-bold mb-3 text-sm">Списание / Выплата</h4>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="number"
+                                            placeholder="Сумма"
+                                            value={payoutAmount}
+                                            onChange={e => setPayoutAmount(e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white w-32"
+                                        />
+                                        <button onClick={() => setPayoutAmount(selectedUser.balance.toString())} className="px-3 py-2 bg-zinc-700 rounded-lg text-xs">MAX</button>
+                                        <button onClick={handlePayout} className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-sm">
+                                            Выплатить
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                                     <div className="bg-zinc-800/50 rounded-xl p-4">
                                         <p className="text-zinc-500 text-sm">Всего заработал</p>
@@ -680,7 +757,8 @@ function AdminPanel() {
                                                 }`}></div>
                                             <div className="flex-1">
                                                 <p className="text-sm font-medium">{clip.offerName}</p>
-                                                <p className="text-xs text-zinc-500">{clip.platform} • {clip.views} просм.</p>
+                                                <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{clip.platform} • {clip.videoUrl}</a>
+                                                <p className="text-xs text-zinc-500">{clip.views} просм.</p>
                                             </div>
                                             <p className="text-sm font-medium text-emerald-400">{clip.earnedAmount.toFixed(0)} ₽</p>
                                         </div>
@@ -696,7 +774,15 @@ function AdminPanel() {
                             <div className="flex justify-between items-center">
                                 <h2 className="text-lg font-semibold">Офферы ({offers.length})</h2>
                                 <button
-                                    onClick={() => setShowOfferForm(true)}
+                                    onClick={() => {
+                                        setEditingOfferId(null);
+                                        setOfferForm({
+                                            name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
+                                            totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
+                                            description: '', requirements: '', assetsLink: '', daysLeft: '30'
+                                        });
+                                        setShowOfferForm(true);
+                                    }}
                                     className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium text-sm transition-colors"
                                 >
                                     <Plus size={16} />
@@ -720,12 +806,20 @@ function AdminPanel() {
                                             }`}>
                                             {offer.isActive ? 'Активен' : 'Неактивен'}
                                         </span>
-                                        <button
-                                            onClick={() => handleToggleOffer(offer.id)}
-                                            className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-                                        >
-                                            {offer.isActive ? 'Отключить' : 'Включить'}
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleEditOffer(offer)}
+                                                className="px-3 py-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded text-sm"
+                                            >
+                                                Изм.
+                                            </button>
+                                            <button
+                                                onClick={() => handleToggleOffer(offer.id)}
+                                                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
+                                            >
+                                                {offer.isActive ? 'Откл.' : 'Вкл.'}
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -838,13 +932,13 @@ function AdminPanel() {
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
                     <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl my-8">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold">Создать оффер</h3>
+                            <h3 className="text-lg font-bold">{editingOfferId ? 'Редактировать оффер' : 'Создать оффер'}</h3>
                             <button onClick={() => setShowOfferForm(false)} className="text-zinc-400 hover:text-white">
                                 <X size={24} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateOffer} className="space-y-4">
+                        <form onSubmit={handleCreateOrUpdateOffer} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm text-zinc-500 mb-2">Имя блогера *</label>
@@ -1037,7 +1131,7 @@ function AdminPanel() {
                                             Загрузка...
                                         </>
                                     ) : (
-                                        'Создать оффер'
+                                        editingOfferId ? 'Сохранить изменения' : 'Создать оффер'
                                     )}
                                 </button>
                             </div>
