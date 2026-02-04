@@ -463,46 +463,49 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                 <h3 className="text-lg font-bold text-white mb-1 pr-6 truncate">{selectedVideo.title}</h3>
                                 <p className="text-xs text-zinc-500 mb-6">{selectedVideo.date}</p>
 
-                                {/* AI Report Card */}
+                                {/* Stats Card */}
                                 <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-4 mb-4">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <BarChart2 size={16} className="text-blue-400" />
-                                            <span className="text-sm font-bold text-zinc-200">Статус проверки</span>
-                                        </div>
-                                        {selectedVideo.aiData?.score && (
-                                            <div className={`px-2 py-0.5 rounded text-xs font-bold ${selectedVideo.aiData.score > 70 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                                }`}>
-                                                Score: {selectedVideo.aiData.score}/100
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="bg-black/40 rounded-lg p-3 text-center border border-white/5">
+                                            <div className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">Просмотры</div>
+                                            <div className="text-xl font-bold text-white flex items-center justify-center gap-1.5">
+                                                <Play size={14} className="text-white fill-white" />
+                                                {selectedVideo.views}
                                             </div>
+                                        </div>
+                                        <div className="bg-black/40 rounded-lg p-3 text-center border border-white/5">
+                                            <div className="text-xs text-zinc-500 mb-1 uppercase tracking-wide">Заработано</div>
+                                            <div className="text-xl font-bold text-emerald-400">
+                                                {selectedVideo.earnedAmount?.toFixed(2) || '0.00'} ₽
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${selectedVideo.isVerified ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-500 animate-pulse'}`}></div>
+                                            <span className={`text-xs font-medium ${selectedVideo.isVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                                {selectedVideo.isVerified ? 'Верифицирован' : 'Ожидает проверки хэштега'}
+                                            </span>
+                                        </div>
+                                        {!selectedVideo.isVerified && selectedVideo.verificationCode && (
+                                            <span className="text-[10px] bg-zinc-800 px-2 py-1 rounded text-zinc-400 font-mono select-all">
+                                                {selectedVideo.verificationCode}
+                                            </span>
                                         )}
                                     </div>
 
-                                    {selectedVideo.status === 'processing' ? (
-                                        <div className="text-center py-4">
-                                            <Clock size={32} className="text-amber-500 mx-auto mb-2 animate-spin" style={{ animationDuration: '3s' }} />
-                                            <p className="text-sm text-zinc-300">Клип на проверке...</p>
-                                            <p className="text-xs text-zinc-500 mt-1">Обычно это занимает до 24 часов</p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-between text-xs text-zinc-400 mb-2">
-                                                <span>Категория:</span>
-                                                <span className="text-white font-medium">{selectedVideo.aiData?.category || 'N/A'}</span>
-                                            </div>
-                                            {selectedVideo.status === 'rejected' && (
-                                                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mt-3">
-                                                    <div className="flex items-start gap-2">
-                                                        <AlertTriangle size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
-                                                        <div>
-                                                            <p className="text-xs font-bold text-red-400 mb-0.5">Клип отклонён</p>
-                                                            <p className="text-xs text-zinc-300 leading-snug">{selectedVideo.aiData?.rejectionReason}</p>
-                                                            <p className="text-[10px] text-zinc-500 mt-1 italic">"{selectedVideo.aiData?.comment}"</p>
-                                                        </div>
-                                                    </div>
+                                    {/* Error State */}
+                                    {selectedVideo.status === 'rejected' && (
+                                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mt-4">
+                                            <div className="flex items-start gap-2">
+                                                <AlertTriangle size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-red-400 mb-0.5">Клип отклонён</p>
+                                                    <p className="text-xs text-zinc-300 leading-snug">{selectedVideo.aiData?.rejectionReason}</p>
                                                 </div>
-                                            )}
-                                        </>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
 
