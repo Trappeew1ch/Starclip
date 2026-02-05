@@ -1,10 +1,13 @@
+```typescript
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, Play, Users } from 'lucide-react';
+import { ChevronRight, ChevronDown, Play, Users, X, Wallet } from 'lucide-react';
 import { EarningsClip, ViewType } from '../types';
 import { usersApi } from '../services';
 
 interface Stats {
     balance: number;
+    earnedClips: number;
+    earnedReferrals: number;
     profiles: number;
     videos: number;
     followers: number;
@@ -27,6 +30,10 @@ interface EarningsViewProps {
 export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
     const [stats, setStats] = useState<Stats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showDetails, setShowDetails] = useState(false);
+    const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
 
     useEffect(() => {
         const loadStats = async () => {
@@ -42,20 +49,32 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
         loadStats();
     }, []);
 
-    const handleWithdraw = async () => {
+    const handleWithdrawSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!withdrawAmount || isWithdrawing) return;
+
+        setIsWithdrawing(true);
         try {
-            const result = await usersApi.withdraw();
-            if (result.supportUrl) {
-                window.open(result.supportUrl, '_blank');
-            }
+            const result = await usersApi.withdraw({ 
+                amount: parseFloat(withdrawAmount),
+                wallet: 'Telegram User' // In future ask for wallet
+            });
+            alert(result.message || 'Заявка отправлена!');
+            setShowWithdrawModal(false);
+            setWithdrawAmount('');
+            // Reload stats to update balance
+            const data = await usersApi.getStats();
+            setStats(data);
         } catch (error: any) {
             alert(error.message || 'Ошибка при запросе вывода');
+        } finally {
+            setIsWithdrawing(false);
         }
     };
 
     const formatNumber = (num: number): string => {
-        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+        if (num >= 1000000) return `${ (num / 1000000).toFixed(1) } M`;
+        if (num >= 1000) return `${ (num / 1000).toFixed(1) } K`;
         return num.toString();
     };
 
@@ -98,18 +117,53 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                 {/* Balance Text */}
                 <div className="relative z-10 flex flex-col items-center">
                     <h1 className="text-4xl font-bold text-white tracking-tight mb-1 drop-shadow-lg">
-                        ₽{stats?.balance.toFixed(2) || '0.00'}
+                        {stats?.balance.toFixed(0)} ₽
                     </h1>
-                    <p className="text-sm font-normal text-zinc-400 mb-6">
-                        общий баланс в RUB
+                    <p className="text-blue-200 text-sm font-medium mb-4 tracking-wide bg-blue-500/10 px-3 py-1 rounded-full border border-blue-400/20 backdrop-blur-md">
+                        Доступно для вывода
                     </p>
 
-                    {/* Withdraw Button */}
-                    <button
-                        onClick={handleWithdraw}
-                        className="bg-white text-black font-bold text-base px-12 py-3.5 rounded-[32px] hover:bg-zinc-200 transition-all shadow-[0_0_25px_rgba(255,255,255,0.15)] active:scale-95"
+                    {/* Breakdown Toggle */}
+                    <button 
+                        onClick={() => setShowDetails(!showDetails)}
+                        className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors mb-2"
                     >
-                        Вывести
+                        {showDetails ? 'Скрыть детали' : 'Подробнее'}
+                        {showDetails ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </button>
+
+                    {/* Breakdown Details */}
+                    {showDetails && (
+                        <div className="w-64 bg-zinc-900/80 backdrop-blur-md border border-white/10 rounded-xl p-3 mb-4 animate-in slide-in-from-top-2">
+                            <div className="flex justify-between items-center mb-2 pb-2 border-b border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                    <span className="text-xs text-zinc-300">С нарезок</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xxs text-red-400 bg-red-500/10 px-1 rounded">-10%</span>
+                                    <span className="text-sm font-medium text-white">{stats?.earnedClips.toFixed(0)} ₽</span>
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                                    <span className="text-xs text-zinc-300">Реферальные</span>
+                                </div>
+                                <span className="text-sm font-medium text-white">{stats?.earnedReferrals.toFixed(0)} ₽</span>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <button
+                        onClick={() => setShowWithdrawModal(true)}
+                        className="group relative px-8 py-3 bg-white text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 transition-all duration-300 overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700"></div>
+                        <span className="relative flex items-center gap-2">
+                            <Wallet size={18} className="text-black" />
+                            Вывести средства
+                        </span>
                     </button>
                 </div>
             </div>

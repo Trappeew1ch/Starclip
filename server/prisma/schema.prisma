@@ -28,6 +28,7 @@ model User {
   clips          Clip[]
   campaigns      UserCampaign[]
   socialAccounts SocialAccount[]
+  payoutRequests PayoutRequest[]
 }
 
 model Offer {
@@ -119,4 +120,16 @@ model Transaction {
   type      String // 'earning' | 'withdrawal' | 'bonus'
   status    String   @default("completed") // pending | completed | cancelled
   createdAt DateTime @default(now())
+}
+
+model PayoutRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  amount    Float
+  wallet    String?
+  status    String   @default("pending") // pending | paid | rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

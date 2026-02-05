@@ -28,6 +28,17 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
             include: { offer: true }
         });
 
+        // Get referrals earnings
+        const referralTx = await prisma.transaction.aggregate({
+            _sum: { amount: true },
+            where: {
+                userId,
+                type: 'referral'
+            }
+        });
+        const earnedFromReferrals = referralTx._sum.amount || 0;
+        const earnedFromClips = clips.reduce((sum, c) => sum + c.earnedAmount, 0);
+
         // Calculate stats
         const totalVideos = clips.length;
         const totalViews = clips.reduce((sum, c) => sum + c.views, 0);
@@ -53,6 +64,8 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
 
         const responseData = {
             balance: user?.balance || 0,
+            earnedClips: earnedFromClips,
+            earnedReferrals: earnedFromReferrals,
             profiles: accounts.length,
             videos: totalVideos,
             followers: totalFollowers,
@@ -60,7 +73,6 @@ router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
             avgViews,
             topClips
         };
-        console.log(`stats for user ${userId}: balance=${responseData.balance}, clips=${responseData.videos}`);
         res.json(responseData);
     } catch (error) {
         console.error('Get stats error:', error);
@@ -139,23 +151,54 @@ router.post('/accounts', authMiddleware, async (req: AuthRequest, res) => {
     }
 });
 
-// Request withdrawal (opens support chat link)
+// Request withdrawal
 router.post('/withdraw', authMiddleware, async (req: AuthRequest, res) => {
     try {
+        const userId = req.user!.id;
+        const { amount, wallet } = req.body;
+
+        if (!amount || amount < 10) {
+            return res.status(400).json({ error: 'Минимальная сумма вывода 10 ₽' });
+        }
+
         const user = await prisma.user.findUnique({
-            where: { id: req.user!.id }
+            where: { id: userId }
         });
 
-        if (!user || user.balance <= 0) {
-            return res.status(400).json({ error: 'Insufficient balance' });
+        if (!user || user.balance < amount) {
+            return res.status(400).json({ error: 'Недостаточно средств на балансе' });
         }
+
+        // Create transaction to deduct balance and create request
+        await prisma.$transaction([
+            prisma.user.update({
+                where: { id: userId },
+                data: { balance: { decrement: amount } }
+            }),
+            prisma.payoutRequest.create({
+                data: {
+                    userId,
+                    amount,
+                    wallet: wallet || 'Не указан',
+                    status: 'pending'
+                }
+            }),
+            prisma.transaction.create({
+                data: {
+                    userId,
+                    amount: -amount,
+                    type: 'withdrawal',
+                    status: 'pending'
+                }
+            })
+        ]);
 
         const supportUsername = process.env.SUPPORT_USERNAME || 'support';
 
         res.json({
-            message: 'Contact support for withdrawal',
-            supportUrl: `https://t.me/${supportUsername}`,
-            currentBalance: user.balance
+            success: true,
+            message: 'Заявка на вывод создана',
+            currentBalance: user.balance - amount
         });
     } catch (error) {
         console.error('Withdraw error:', error);

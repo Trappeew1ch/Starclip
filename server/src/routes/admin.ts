@@ -17,7 +17,8 @@ router.get('/stats', async (req, res) => {
             activeOffers,
             pendingClips,
             totalClips,
-            totalPaidOut
+            totalPaidOut,
+            pendingPayouts
         ] = await Promise.all([
             prisma.user.count(),
             prisma.offer.count({ where: { isActive: true } }),
@@ -26,7 +27,8 @@ router.get('/stats', async (req, res) => {
             prisma.clip.aggregate({
                 _sum: { earnedAmount: true },
                 where: { status: 'approved' }
-            })
+            }),
+            prisma.payoutRequest.count({ where: { status: 'pending' } })
         ]);
 
         res.json({
@@ -34,10 +36,76 @@ router.get('/stats', async (req, res) => {
             activeOffers,
             pendingClips,
             totalClips,
+            pendingPayouts,
             totalPaidOut: totalPaidOut._sum.earnedAmount || 0
         });
     } catch (error) {
         console.error('Admin stats error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get pending payouts
+router.get('/payouts', async (req, res) => {
+    try {
+        const requests = await prisma.payoutRequest.findMany({
+            where: { status: 'pending' },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        firstName: true,
+                        telegramId: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(requests);
+    } catch (error) {
+        console.error('Get payouts error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Confirm payout
+router.post('/payouts/:id/confirm', async (req, res) => {
+    try {
+        const requestId = parseInt(req.params.id);
+        await prisma.payoutRequest.update({
+            where: { id: requestId },
+            data: { status: 'paid' }
+        });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Reject payout (refund)
+router.post('/payouts/:id/reject', async (req, res) => {
+    try {
+        const requestId = parseInt(req.params.id);
+        const request = await prisma.payoutRequest.findUnique({ where: { id: requestId } });
+
+        if (!request || request.status !== 'pending') {
+            return res.status(400).json({ error: 'Invalid request' });
+        }
+
+        await prisma.$transaction([
+            prisma.payoutRequest.update({
+                where: { id: requestId },
+                data: { status: 'rejected' }
+            }),
+            prisma.user.update({
+                where: { id: request.userId },
+                data: { balance: { increment: request.amount } }
+            })
+        ]);
+
+        res.json({ success: true });
+    } catch (error) {
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -250,7 +318,10 @@ router.post('/clips/:id/approve', async (req, res) => {
 
         const clip = await prisma.clip.findUnique({
             where: { id: clipId },
-            include: { offer: true }
+            include: {
+                offer: true,
+                user: true
+            }
         });
 
         if (!clip) {
@@ -260,8 +331,7 @@ router.post('/clips/:id/approve', async (req, res) => {
         // Calculate earnings: views / 1000 * CPM rate
         const earnedAmount = (views / 1000) * clip.offer.cpmRate;
 
-        // Create transaction to ensure all updates happen or none
-        const [updatedClip] = await prisma.$transaction([
+        const prismaTx = [
             // Update clip
             prisma.clip.update({
                 where: { id: clipId },
@@ -269,7 +339,7 @@ router.post('/clips/:id/approve', async (req, res) => {
                     status: 'approved',
                     views: Number(views),
                     earnedAmount,
-                    isVerified: true // Admin approval = verified
+                    isVerified: true
                 }
             }),
             // Update user balance
@@ -295,16 +365,38 @@ router.post('/clips/:id/approve', async (req, res) => {
                     type: 'earning'
                 }
             })
-        ]);
+        ];
+
+        // REFERRAL LOGIC: Credit referrer 10%
+        if (clip.user.referredById) {
+            const referralBonus = earnedAmount * 0.10;
+            if (referralBonus > 0) {
+                prismaTx.push(
+                    prisma.user.update({
+                        where: { id: clip.user.referredById },
+                        data: { balance: { increment: referralBonus } }
+                    })
+                );
+                prismaTx.push(
+                    prisma.transaction.create({
+                        data: {
+                            userId: clip.user.referredById,
+                            amount: referralBonus,
+                            type: 'referral',
+                            status: 'completed'
+                        }
+                    })
+                );
+            }
+        }
+
+        const [updatedClip] = await prisma.$transaction(prismaTx);
 
         // Send notification (outside transaction)
-        await notifyClipApproved(clip.userId, clip.title || 'Клип', earnedAmount);
+        notifyClipApproved(clip.userId, `${clip.offer.name} - ${clip.offer.title}`, clip.offer.name)
+            .catch(err => console.error('Failed to notify user:', err));
 
-        res.json({
-            message: 'Clip approved',
-            clip: updatedClip,
-            earnedAmount
-        });
+        res.json(updatedClip);
     } catch (error) {
         console.error('Approve clip error:', error);
         res.status(500).json({ error: 'Server error' });

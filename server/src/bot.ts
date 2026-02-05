@@ -201,16 +201,17 @@ export async function sendNotification(telegramId: bigint, message: string, keyb
 }
 
 // Notify clip approved
-export async function notifyClipApproved(userId: number, clipTitle: string, earnedAmount: number) {
+export async function notifyClipApproved(userId: number, clipTitle: string, offerName: string) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return;
 
     await sendNotification(
         user.telegramId,
-        `✅ *Клип одобрен!*\n\n` +
+        `🔥 *Клип одобрен!*\n\n` +
         `📹 "${clipTitle}"\n` +
-        `💰 Начислено: +${earnedAmount.toFixed(2)} ₽\n\n` +
-        `Продолжайте набирать просмотры для увеличения заработка!`
+        `🎯 Оффер: ${offerName}\n\n` +
+        `⏳ Статистика прогрузится через 5 дней. Ожидай!\n` +
+        `🚀 Отличная работа!`
     );
 }
 

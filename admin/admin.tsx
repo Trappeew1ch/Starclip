@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard } from 'lucide-react';
+import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard, Wallet } from 'lucide-react';
 
 // Use relative URL so it works both locally and in production
 const API_URL = '/api';
@@ -204,11 +204,12 @@ function AdminLogin({ onLogin }: { onLogin: (id: string) => void }) {
 // Main Admin Panel
 function AdminPanel() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'clips' | 'users' | 'offers'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'clips' | 'users' | 'offers' | 'payouts'>('dashboard');
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [pendingClips, setPendingClips] = useState<PendingClip[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [offers, setOffers] = useState<any[]>([]);
+    const [payouts, setPayouts] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -286,11 +287,34 @@ function AdminPanel() {
             } else if (activeTab === 'offers') {
                 const offersData = await adminRequest<any[]>('/admin/offers');
                 setOffers(offersData);
+            } else if (activeTab === 'payouts') {
+                const payoutsData = await adminRequest<any[]>('/admin/payouts');
+                setPayouts(payoutsData);
             }
         } catch (error) {
             console.error('Failed to load data:', error);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handlePayoutConfirm = async (id: number) => {
+        if (!confirm('Подтвердить выплату?')) return;
+        try {
+            await adminRequest(`/admin/payouts/${id}/confirm`, {}); // POST with empty body
+            loadData();
+        } catch (error) {
+            alert('Ошибка подтверждения');
+        }
+    };
+
+    const handlePayoutReject = async (id: number) => {
+        if (!confirm('Отклонить и вернуть средства?')) return;
+        try {
+            await adminRequest(`/admin/payouts/${id}/reject`, {}); // POST with empty body
+            loadData();
+        } catch (error) {
+            alert('Ошибка отклонения');
         }
     };
 
@@ -518,6 +542,7 @@ function AdminPanel() {
                         {[
                             { id: 'dashboard', icon: DollarSign, label: 'Дашборд' },
                             { id: 'clips', icon: Clock, label: 'Модерация', badge: stats?.pendingClips },
+                            { id: 'payouts', icon: Wallet, label: 'Выплаты', badge: stats?.pendingPayouts },
                             { id: 'users', icon: Users, label: 'Пользователи' },
                             { id: 'offers', icon: Film, label: 'Офферы' },
                         ].map(item => (
@@ -651,6 +676,66 @@ function AdminPanel() {
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {/* Payouts */}
+                    {activeTab === 'payouts' && (
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
+                            <div className="p-4 border-b border-white/5">
+                                <h2 className="font-semibold text-lg text-white">Заявки на вывод</h2>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="text-zinc-400 bg-white/5">
+                                        <tr>
+                                            <th className="px-4 py-3 font-medium">Пользователь</th>
+                                            <th className="px-4 py-3 font-medium">Telegram ID</th>
+                                            <th className="px-4 py-3 font-medium">Сумма</th>
+                                            <th className="px-4 py-3 font-medium">Реквизиты</th>
+                                            <th className="px-4 py-3 font-medium">Дата</th>
+                                            <th className="px-4 py-3 font-medium">Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {payouts.map(req => (
+                                            <tr key={req.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="px-4 py-3 text-white">
+                                                    <div className="font-medium">{req.user.firstName}</div>
+                                                    <div className="text-xs text-zinc-500">@{req.user.username}</div>
+                                                </td>
+                                                <td className="px-4 py-3 font-mono text-zinc-400 text-xs">{req.user.telegramId}</td>
+                                                <td className="px-4 py-3 text-green-400 font-bold">{req.amount} ₽</td>
+                                                <td className="px-4 py-3 text-zinc-300">{req.wallet || 'Не указан'}</td>
+                                                <td className="px-4 py-3 text-zinc-500">{new Date(req.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handlePayoutConfirm(req.id)}
+                                                            className="p-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500/20 transition-colors"
+                                                            title="Подтвердить выплату"
+                                                        >
+                                                            <Check size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handlePayoutReject(req.id)}
+                                                            className="p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors"
+                                                            title="Отклонить"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {payouts.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">Нет активных заявок на вывод</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     )}
 
