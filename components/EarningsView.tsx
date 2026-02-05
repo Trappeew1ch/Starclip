@@ -1,4 +1,3 @@
-```typescript
 import React, { useEffect, useState } from 'react';
 import { ChevronRight, ChevronDown, Play, Users, X, Wallet } from 'lucide-react';
 import { EarningsClip, ViewType } from '../types';
@@ -55,7 +54,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
 
         setIsWithdrawing(true);
         try {
-            const result = await usersApi.withdraw({ 
+            const result = await usersApi.withdraw({
                 amount: parseFloat(withdrawAmount),
                 wallet: 'Telegram User' // In future ask for wallet
             });
@@ -124,7 +123,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                     </p>
 
                     {/* Breakdown Toggle */}
-                    <button 
+                    <button
                         onClick={() => setShowDetails(!showDetails)}
                         className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors mb-2"
                     >
@@ -154,7 +153,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                             </div>
                         </div>
                     )}
-                    
+
                     <button
                         onClick={() => setShowWithdrawModal(true)}
                         className="group relative px-8 py-3 bg-white text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 transition-all duration-300 overflow-hidden"
