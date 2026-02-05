@@ -112,7 +112,11 @@ export const usersApi = {
             body: JSON.stringify({ platform, accountName, profileUrl })
         }),
 
-    withdraw: () => apiRequest<any>('/users/withdraw', { method: 'POST' })
+    withdraw: (data: { amount: number; wallet: string }) =>
+        apiRequest<any>('/users/withdraw', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        })
 };
 
 // Admin API
