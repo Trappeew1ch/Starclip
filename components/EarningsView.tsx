@@ -116,7 +116,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                 {/* Balance Text */}
                 <div className="relative z-10 flex flex-col items-center">
                     <h1 className="text-4xl font-bold text-white tracking-tight mb-1 drop-shadow-lg">
-                        {stats?.balance.toFixed(0)} ₽
+                        {(stats?.balance || 0).toFixed(0)} ₽
                     </h1>
                     <p className="text-blue-200 text-sm font-medium mb-4 tracking-wide bg-blue-500/10 px-3 py-1 rounded-full border border-blue-400/20 backdrop-blur-md">
                         Доступно для вывода
@@ -141,7 +141,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xxs text-red-400 bg-red-500/10 px-1 rounded">-10%</span>
-                                    <span className="text-sm font-medium text-white">{stats?.earnedClips.toFixed(0)} ₽</span>
+                                    <span className="text-sm font-medium text-white">{(stats?.earnedClips || 0).toFixed(0)} ₽</span>
                                 </div>
                             </div>
                             <div className="flex justify-between items-center">
@@ -149,7 +149,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                                     <div className="w-2 h-2 rounded-full bg-green-400"></div>
                                     <span className="text-xs text-zinc-300">Реферальные</span>
                                 </div>
-                                <span className="text-sm font-medium text-white">{stats?.earnedReferrals.toFixed(0)} ₽</span>
+                                <span className="text-sm font-medium text-white">{(stats?.earnedReferrals || 0).toFixed(0)} ₽</span>
                             </div>
                         </div>
                     )}
