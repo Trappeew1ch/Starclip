@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // Use relative URL - works both locally (with Vite proxy) and in production
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001/api' : '/api';
 
