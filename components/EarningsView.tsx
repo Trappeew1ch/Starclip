@@ -118,9 +118,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                     <h1 className="text-4xl font-bold text-white tracking-tight mb-1 drop-shadow-lg">
                         {(stats?.balance || 0).toFixed(0)} ₽
                     </h1>
-                    <p className="text-blue-200 text-sm font-medium mb-4 tracking-wide bg-blue-500/10 px-3 py-1 rounded-full border border-blue-400/20 backdrop-blur-md">
-                        Доступно для вывода
-                    </p>
+
 
                     {/* Breakdown Toggle */}
                     <button
@@ -156,12 +154,12 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
 
                     <button
                         onClick={() => setShowWithdrawModal(true)}
-                        className="group relative px-8 py-3 bg-white text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 transition-all duration-300 overflow-hidden"
+                        className="group relative px-8 py-3 bg-white text-black font-bold rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] active:scale-95 transition-all duration-300 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 translate-x-[-150%] group-hover:translate-x-[150%] transition-transform duration-700"></div>
                         <span className="relative flex items-center gap-2">
                             <Wallet size={18} className="text-black" />
-                            Вывести средства
+                            Вывести
                         </span>
                     </button>
                 </div>
@@ -277,6 +275,51 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
             </div>
 
             {/* 7. REFERRAL SECTION REMOVED */}
+
+            {/* Withdraw Modal */}
+            {showWithdrawModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-[#18181b] border border-white/10 rounded-2xl w-full max-w-sm overflow-hidden p-6 space-y-4 animate-in slide-in-from-bottom-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-xl font-bold text-white">Вывод средств</h3>
+                            <button onClick={() => setShowWithdrawModal(false)} className="text-zinc-400 hover:text-white">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-zinc-400 mb-1.5">Сумма (₽)</label>
+                                <input
+                                    type="number"
+                                    value={withdrawAmount}
+                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                    placeholder="Минимум 500 ₽"
+                                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                />
+                                <p className="text-xs text-zinc-500 mt-1">
+                                    Доступно: {(stats?.balance || 0).toFixed(0)} ₽
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={handleWithdrawSubmit}
+                                disabled={isWithdrawing || !withdrawAmount || Number(withdrawAmount) > (stats?.balance || 0)}
+                                className="w-full bg-blue-500 text-white font-bold py-3.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            >
+                                {isWithdrawing ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Вывести
+                                        <ChevronRight size={18} />
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
