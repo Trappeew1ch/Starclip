@@ -225,7 +225,6 @@ function AdminPanel() {
         type: 'STREAMER',
         imageUrl: '',
         avatarUrl: '',
-        bannerUrl: '',
         totalBudget: '',
         cpmRate: '',
         language: 'Russian',
@@ -235,8 +234,12 @@ function AdminPanel() {
         assetsLink: '',
         daysLeft: '30'
     });
-    const [bannerFile, setBannerFile] = useState<File | null>(null);
-    const [bannerPreview, setBannerPreview] = useState<string>('');
+
+    // File upload states
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string>('');
     const [isUploading, setIsUploading] = useState(false);
 
     // Check auth on mount
@@ -354,18 +357,22 @@ function AdminPanel() {
         try {
             setIsUploading(true);
 
-            // Upload banner file if selected
-            let bannerUrl = offerForm.bannerUrl;
-            if (bannerFile) {
-                bannerUrl = await uploadFile(bannerFile);
-                finalBannerUrl = await uploadFile(bannerFile);
+            let finalImageUrl = offerForm.imageUrl;
+            let finalAvatarUrl = offerForm.avatarUrl;
+
+            // Upload files if selected
+            if (imageFile) {
+                finalImageUrl = await uploadFile(imageFile);
+            }
+            if (avatarFile) {
+                finalAvatarUrl = await uploadFile(avatarFile);
             }
 
             const payload = {
                 ...offerForm,
                 imageUrl: finalImageUrl,
                 avatarUrl: finalAvatarUrl,
-                bannerUrl: finalBannerUrl,
+                bannerUrl: '', // Deprecated
                 totalBudget: Number(offerForm.totalBudget),
                 cpmRate: Number(offerForm.cpmRate),
                 daysLeft: Number(offerForm.daysLeft),
@@ -387,7 +394,7 @@ function AdminPanel() {
             setShowOfferForm(false);
             setEditingOfferId(null);
             setOfferForm({
-                name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
+                name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '',
                 totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
                 description: '', requirements: '', assetsLink: '', daysLeft: '30'
             });
@@ -396,10 +403,9 @@ function AdminPanel() {
             setImagePreview('');
             setAvatarFile(null);
             setAvatarPreview('');
-            setBannerFile(null);
-            setBannerPreview('');
             loadData();
         } catch (error: any) {
+            console.error('Failed to save offer:', error);
             alert(error.message || 'Ошибка при сохранении оффера');
         } finally {
             setIsUploading(false);

@@ -266,13 +266,13 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
             <div className="relative z-10 w-full mb-8 px-1">
                 <button
                     onClick={() => setActiveModal('verification')}
-                    className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl shadow-blue-900/20 active:scale-[0.98] transition-transform"
+                    className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl shadow-blue-900/20 active:scale-[0.98] transition-transform bg-zinc-900"
                 >
-                    <div className="absolute inset-0 bg-black/40 z-10 pointer-events-none transition-colors group-hover:bg-black/30"></div>
+                    <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none transition-colors group-hover:bg-black/30"></div>
                     <img
                         src="/images/starclip-code.png"
                         alt="Получить код верификации"
-                        className="w-full h-auto object-cover relative z-0 scale-[1.02] group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-auto object-cover relative z-10 scale-[1.02] group-hover:scale-105 transition-transform duration-500"
                     />
                 </button>
             </div>
