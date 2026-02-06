@@ -89,7 +89,7 @@ export const ReferralSection: React.FC = () => {
             </div>
 
             {/* Referral Link Block */}
-            <div className="glass-panel bg-[#18181b]/60 rounded-2xl p-4 mb-4 border-white/5">
+            <div className="glass-shine rounded-2xl p-4 mb-4">
                 <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                         <UserPlus size={20} className="text-blue-400" />
@@ -127,7 +127,7 @@ export const ReferralSection: React.FC = () => {
             </div>
 
             {/* Referrals List */}
-            <div className="glass-panel bg-[#18181b]/60 rounded-2xl p-4 border-white/5">
+            <div className="glass-shine rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <Users size={18} className="text-zinc-400" />
