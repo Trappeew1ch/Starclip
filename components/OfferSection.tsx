@@ -63,7 +63,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                     <button
                         key={offer.id}
                         onClick={() => onOfferClick(offer)}
-                        className="relative w-full mb-1 group text-left transition-transform active:scale-[0.98]"
+                        className="relative w-full mb-1 group text-left transition-transform active:scale-[0.98] glass-shine rounded-[32px] overflow-hidden"
                     >
                         {/* THE BEAM GLOW */}
                         <div
