@@ -272,7 +272,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                     <img
                         src="/images/starclip-code.png"
                         alt="Получить код верификации"
-                        className="w-full h-auto object-cover relative z-10 scale-[1.02] group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-auto object-cover relative z-10 scale-[1.25] group-hover:scale-[1.3] transition-transform duration-500"
                     />
                 </button>
             </div>
