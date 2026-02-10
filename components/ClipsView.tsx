@@ -274,6 +274,11 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                         alt="Получить код верификации"
                         className="w-full h-auto object-cover relative z-10 scale-[1.25] group-hover:scale-[1.3] transition-transform duration-500"
                     />
+                    <div className="absolute bottom-5 left-8 right-8 z-20">
+                        <div className="bg-white text-black font-bold py-3 rounded-xl shadow-lg shadow-black/20 transform group-active:scale-95 transition-transform flex items-center justify-center">
+                            Нажми
+                        </div>
+                    </div>
                 </button>
             </div>
 
@@ -310,10 +315,32 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                     {videos[0]?.verificationCode || '#SC-LOADING'}
                                 </code>
                                 <button
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                        e.stopPropagation();
                                         const code = videos[0]?.verificationCode;
                                         if (code) {
-                                            navigator.clipboard.writeText(code);
+                                            const copyToClipboard = (text: string) => {
+                                                if (navigator.clipboard && window.isSecureContext) {
+                                                    navigator.clipboard.writeText(text).then(() => alert('Скопировано!'));
+                                                } else {
+                                                    const textArea = document.createElement("textarea");
+                                                    textArea.value = text;
+                                                    textArea.style.position = "fixed";
+                                                    textArea.style.left = "-9999px";
+                                                    document.body.appendChild(textArea);
+                                                    textArea.focus();
+                                                    textArea.select();
+                                                    try {
+                                                        document.execCommand('copy');
+                                                        alert('Скопировано!');
+                                                    } catch (err) {
+                                                        console.error('Copy failed', err);
+                                                        prompt('Скопируйте код вручную:', text);
+                                                    }
+                                                    document.body.removeChild(textArea);
+                                                }
+                                            };
+                                            copyToClipboard(code);
                                         }
                                     }}
                                     className="px-4 py-3 bg-[#27272a] hover:bg-[#3f3f46] rounded-lg text-white font-medium transition-colors text-sm whitespace-nowrap border border-white/5"

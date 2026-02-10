@@ -99,7 +99,7 @@ export function initBot() {
                         await bot!.sendMessage(Number(referrer.telegramId),
                             `🎉 *Новый реферал!*\n\n` +
                             `${user.first_name || user.username || 'Пользователь'} присоединился по вашей ссылке!\n\n` +
-                            `Теперь вы будете получать 10% с его заработка.`,
+                            `Теперь вы будете получать *10%* с заработка с его нарезок!`,
                             { parse_mode: 'Markdown' }
                         ).catch(err => console.error('Failed to notify referrer:', err));
                     }
