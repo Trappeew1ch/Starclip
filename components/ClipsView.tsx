@@ -274,9 +274,9 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                         alt="Получить код верификации"
                         className="w-full h-auto object-cover relative z-10 scale-[1.25] group-hover:scale-[1.3] transition-transform duration-500"
                     />
-                    <div className="absolute bottom-2 left-4 right-4 z-20">
-                        <div className="bg-white text-black font-bold py-3 rounded-xl shadow-lg shadow-black/20 transform group-active:scale-95 transition-transform flex items-center justify-center">
-                            Нажми
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-auto">
+                        <div className="bg-white text-black font-bold py-2 px-6 rounded-lg shadow-lg shadow-black/20 transform group-active:scale-95 transition-transform flex items-center justify-center text-sm whitespace-nowrap">
+                            Получить код
                         </div>
                     </div>
                 </button>
