@@ -48,14 +48,29 @@
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
-    /* Glass Effect with Corner Shine - Refined */
+    /* Glass Effect with Corner Shine - Fixed with Mask */
     .glass-shine {
-      background: linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)) padding-box,
-        linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.4) 100%) border-box;
-      border: 1px solid transparent;
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .glass-shine::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.5px;
+      /* Border width */
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.6) 100%);
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
     }
   </style>
   <script type="importmap">
