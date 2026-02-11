@@ -39,6 +39,53 @@ export function initBot() {
         });
     }
 
+    const CHANNEL_USERNAME = '@starclip_channel';
+
+    const checkSubscription = async (userId: number): Promise<boolean> => {
+        try {
+            const chatMember = await bot!.getChatMember(CHANNEL_USERNAME, userId);
+            return ['creator', 'administrator', 'member', 'restricted'].includes(chatMember.status);
+        } catch (error) {
+            console.error('Error checking subscription:', error);
+            // If checking fails (e.g. bot not admin in channel), allow access to avoid blocking users
+            return true;
+        }
+    };
+
+    const sendSubscriptionRequest = async (chatId: number) => {
+        await bot!.sendMessage(chatId,
+            `🛑 *Доступ ограничен*\n\n` +
+            `Для использования бота необходимо подписаться на наш канал: ${CHANNEL_USERNAME}\n\n` +
+            `После подписки нажмите кнопку *"Проверить подписку"*`,
+            {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '📢 Подписаться на канал', url: `https://t.me/${CHANNEL_USERNAME.replace('@', '')}` }],
+                        [{ text: '✅ Проверить подписку', callback_data: 'check_sub' }]
+                    ]
+                }
+            }
+        );
+    };
+
+    // Callback Query Handler for Subscription Check
+    bot.on('callback_query', async (query) => {
+        if (query.data === 'check_sub' && query.message) {
+            const userId = query.from.id;
+            const isSubscribed = await checkSubscription(userId);
+
+            if (isSubscribed) {
+                await bot!.answerCallbackQuery(query.id, { text: '✅ Подписка подтверждена!' });
+                await bot!.deleteMessage(query.message.chat.id, query.message.message_id);
+                // Trigger start logic manually or ask user to type /start
+                await bot!.sendMessage(query.message.chat.id, '🎉 Спасибо! Теперь вы можете использовать бота. Нажмите /start');
+            } else {
+                await bot!.answerCallbackQuery(query.id, { text: '❌ Вы еще не подписались!', show_alert: true });
+            }
+        }
+    });
+
     // /start command with optional referral code
     bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
         const chatId = msg.chat.id;
@@ -46,6 +93,13 @@ export function initBot() {
         const startParam = match?.[1]; // e.g., "ref_ABCD1234"
 
         if (!user) return;
+
+        // CHECK SUBSCRIPTION
+        const isSubscribed = await checkSubscription(user.id);
+        if (!isSubscribed) {
+            await sendSubscriptionRequest(chatId);
+            return;
+        }
 
         try {
             // Check if this is a referral link
