@@ -274,7 +274,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                         alt="Получить код верификации"
                         className="w-full h-auto object-cover relative z-10 scale-[1.25] group-hover:scale-[1.3] transition-transform duration-500"
                     />
-                    <div className="absolute bottom-5 left-8 right-8 z-20">
+                    <div className="absolute bottom-2 left-4 right-4 z-20">
                         <div className="bg-white text-black font-bold py-3 rounded-xl shadow-lg shadow-black/20 transform group-active:scale-95 transition-transform flex items-center justify-center">
                             Нажми
                         </div>
@@ -325,11 +325,23 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                                 } else {
                                                     const textArea = document.createElement("textarea");
                                                     textArea.value = text;
-                                                    textArea.style.position = "fixed";
-                                                    textArea.style.left = "-9999px";
+                                                    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+                                                    textArea.style.left = "0";
+                                                    textArea.style.top = "0";
+                                                    textArea.style.opacity = "0";
+                                                    textArea.setAttribute("readonly", ""); // Prevent keyboard
                                                     document.body.appendChild(textArea);
-                                                    textArea.focus();
-                                                    textArea.select();
+
+                                                    // iOS hack
+                                                    const range = document.createRange();
+                                                    range.selectNodeContents(textArea);
+                                                    const selection = window.getSelection();
+                                                    if (selection) {
+                                                        selection.removeAllRanges();
+                                                        selection.addRange(range);
+                                                    }
+                                                    textArea.setSelectionRange(0, 999999); // For mobile
+
                                                     try {
                                                         document.execCommand('copy');
                                                         alert('Скопировано!');
