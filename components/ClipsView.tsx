@@ -207,7 +207,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                 className={`flex-shrink-0 w-[90%] snap-center transition-all duration-300 ease-out px-1.5 ${isActive ? 'scale-100 opacity-100 z-10' : 'scale-[0.95] opacity-50 blur-[0.5px] z-0'
                                     }`}
                             >
-                                <div className="glass-panel bg-zinc-900/60 backdrop-blur-xl border-white/10 rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col h-full ring-1 ring-white/5">
+                                <div className="glass-shine bg-zinc-900/60 backdrop-blur-xl border-white/10 rounded-[2rem] p-5 shadow-2xl relative overflow-hidden flex flex-col h-full ring-1 ring-white/5">
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="flex gap-3 items-center">
                                             <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-white/5 overflow-hidden shadow-inner">
@@ -266,7 +266,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
             <div className="relative z-10 w-full mb-8 px-1">
                 <button
                     onClick={() => setActiveModal('verification')}
-                    className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl shadow-blue-900/20 active:scale-[0.98] transition-transform bg-zinc-900"
+                    className="w-full relative group overflow-hidden rounded-[24px] shadow-2xl shadow-blue-900/20 active:scale-[0.98] transition-transform bg-zinc-900 glass-shine"
                 >
                     <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none transition-colors group-hover:bg-black/30"></div>
                     <img
