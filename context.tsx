@@ -10,6 +10,7 @@ interface User {
     photoUrl: string | null;
     balance: number;
     isAdmin: boolean;
+    verificationCode: string | null;
 }
 
 interface AppContextType {

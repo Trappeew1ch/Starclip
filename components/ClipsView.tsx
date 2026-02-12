@@ -312,12 +312,12 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
 
                             <div className="w-full bg-black/60 rounded-xl p-2 pl-4 border border-white/10 mb-8 flex items-center justify-between gap-2">
                                 <code className="text-white font-mono font-bold text-lg tracking-wider truncate">
-                                    {videos[0]?.verificationCode || '#SC-LOADING'}
+                                    {user?.verificationCode || '#SC-LOADING'}
                                 </code>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        const code = videos[0]?.verificationCode;
+                                        const code = user?.verificationCode;
                                         if (code) {
                                             const copyToClipboard = (text: string) => {
                                                 if (navigator.clipboard && window.isSecureContext) {

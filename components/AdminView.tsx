@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Video, Search, ChevronRight, X, AlertTriangle, CheckCircle2, DollarSign, Wallet } from 'lucide-react';
-import { adminApi } from '../services';
+import { Users, Video, Search, ChevronRight, X, AlertTriangle, CheckCircle2, DollarSign, Wallet, ExternalLink } from 'lucide-react';
+import { adminApi, offersApi } from '../services';
 
 export const AdminView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'clips' | 'users' | 'offers'>('clips');
@@ -126,7 +126,14 @@ export const AdminView: React.FC = () => {
                                                 {user.username?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                             <div className="text-left">
-                                                <div className="font-medium text-white">{user.username || 'No Username'}</div>
+                                                <div className="font-medium text-white flex items-center gap-2">
+                                                    {user.username || 'No Username'}
+                                                    {user.verificationCode && (
+                                                        <span className="text-[10px] bg-white/10 text-zinc-400 px-1.5 py-0.5 rounded font-mono">
+                                                            {user.verificationCode}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="text-xs text-zinc-500">
                                                     Клипов: <span className="text-zinc-300">{user.clipsCount}</span> •
                                                     Баланс: <span className="text-emerald-400">{user.balance.toFixed(0)} ₽</span>
@@ -142,11 +149,7 @@ export const AdminView: React.FC = () => {
                     </div>
                 )}
 
-                {activeTab === 'clips' && (
-                    <div className="text-center text-zinc-500 py-10">
-                        Модерация клипов (в разработке)
-                    </div>
-                )}
+                {activeTab === 'clips' && <AdminClipsTab />}
 
                 {activeTab === 'offers' && (
                     <div className="text-center text-zinc-500 py-10">
@@ -217,7 +220,7 @@ export const AdminView: React.FC = () => {
                                     <div key={clip.id} className="bg-zinc-900/50 border border-white/5 rounded-xl p-3 flex gap-3">
                                         {/* Status Line */}
                                         <div className={`w-1 rounded-full ${clip.status === 'approved' ? 'bg-emerald-500' :
-                                                clip.status === 'processing' ? 'bg-amber-500' : 'bg-red-500'
+                                            clip.status === 'processing' ? 'bg-amber-500' : 'bg-red-500'
                                             }`}></div>
 
                                         <div className="flex-1 min-w-0">

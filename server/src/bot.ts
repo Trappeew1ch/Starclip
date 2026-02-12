@@ -115,6 +115,13 @@ export function initBot() {
                 }
             }
 
+            // Generate a unique verification code
+            function generateVerificationCode(): string {
+                return `#SC-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            }
+
+            // ... inside initBot ...
+
             // Check if user already exists
             const existingUser = await prisma.user.findUnique({
                 where: { telegramId: BigInt(user.id) }
@@ -123,17 +130,26 @@ export function initBot() {
             let dbUser;
             if (existingUser) {
                 // Update existing user
+                const updateData: any = {
+                    username: user.username,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                };
+
+                // Backfill verification code if missing
+                if (!existingUser.verificationCode) {
+                    updateData.verificationCode = generateVerificationCode();
+                }
+
                 dbUser = await prisma.user.update({
                     where: { telegramId: BigInt(user.id) },
-                    data: {
-                        username: user.username,
-                        firstName: user.first_name,
-                        lastName: user.last_name,
-                    }
+                    data: updateData
                 });
             } else {
                 // Create new user with optional referrer
                 const referralCode = generateReferralCode();
+                const verificationCode = generateVerificationCode();
+
                 dbUser = await prisma.user.create({
                     data: {
                         telegramId: BigInt(user.id),
@@ -141,6 +157,7 @@ export function initBot() {
                         firstName: user.first_name,
                         lastName: user.last_name,
                         referralCode,
+                        verificationCode,
                         referredById: referrerId,
                         referredAt: referrerId ? new Date() : null
                     }

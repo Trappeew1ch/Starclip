@@ -148,7 +148,8 @@ router.get('/users', async (req, res) => {
                 balance: u.balance,
                 clipsCount: u._count.clips,
                 campaignsCount: u._count.campaigns,
-                createdAt: u.createdAt
+                createdAt: u.createdAt,
+                verificationCode: u.verificationCode || 'Нет кода'
             })),
             total,
             page: parseInt(page as string),
@@ -156,6 +157,68 @@ router.get('/users', async (req, res) => {
         });
     } catch (error) {
         console.error('Get users error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get all clips for Admin Panel
+router.get('/clips', async (req, res) => {
+    try {
+        const { offerId, page = '1', limit = '50' } = req.query;
+        const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+
+        const where: any = {};
+        if (offerId && offerId !== 'all') {
+            where.offerId = offerId as string;
+        }
+
+        const [clips, total] = await Promise.all([
+            prisma.clip.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                            telegramId: true
+                        }
+                    },
+                    offer: {
+                        select: {
+                            name: true,
+                            title: true
+                        }
+                    }
+                },
+                skip,
+                take: parseInt(limit as string),
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.clip.count({ where })
+        ]);
+
+        res.json({
+            clips: clips.map(c => ({
+                id: c.id,
+                title: c.title,
+                videoUrl: c.videoUrl,
+                views: c.views,
+                earnedAmount: c.earnedAmount,
+                status: c.status,
+                createdAt: c.createdAt,
+                user: {
+                    username: c.user.username || c.user.telegramId.toString(),
+                },
+                offer: {
+                    name: c.offer.name,
+                    title: c.offer.title
+                }
+            })),
+            total,
+            page: parseInt(page as string),
+            totalPages: Math.ceil(total / parseInt(limit as string))
+        });
+    } catch (error) {
+        console.error('Get admin clips error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

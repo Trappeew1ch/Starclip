@@ -140,6 +140,15 @@ export const adminApi = {
 
     getPendingClips: () => apiRequest<any[]>('/admin/clips/pending'),
 
+    getClips: (filters?: { offerId?: string; page?: number; limit?: number }) => {
+        const params = new URLSearchParams();
+        if (filters?.offerId) params.append('offerId', filters.offerId);
+        if (filters?.page) params.append('page', filters.page.toString());
+        if (filters?.limit) params.append('limit', filters.limit.toString());
+        const query = params.toString();
+        return apiRequest<any>(`/admin/clips?${query}`);
+    },
+
     approveClip: (id: string, views: number) =>
         apiRequest<any>(`/admin/clips/${id}/approve`, {
             method: 'POST',
