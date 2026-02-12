@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../index.js';
 import { authMiddleware, AuthRequest, validateInitData } from '../middleware/auth.js';
+import crypto from 'crypto';
 
 const router = Router();
+
+function generateVerificationCode(): string {
+    return `#SC-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+}
 
 // Validate init data and return user info
 router.post('/validate', async (req, res) => {
@@ -40,9 +45,18 @@ router.post('/validate', async (req, res) => {
                 firstName: userData.first_name,
                 lastName: userData.last_name,
                 photoUrl: userData.photo_url,
-                isAdmin: shouldBeAdmin
+                isAdmin: shouldBeAdmin,
+                verificationCode: generateVerificationCode()
             }
         });
+
+        // Backfill verification code if missing
+        if (!user.verificationCode) {
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { verificationCode: generateVerificationCode() }
+            });
+        }
 
         // If user should be admin but isn't marked as such, update
         if (shouldBeAdmin && !user.isAdmin) {
@@ -61,7 +75,8 @@ router.post('/validate', async (req, res) => {
                 lastName: user.lastName,
                 photoUrl: user.photoUrl,
                 balance: user.balance,
-                isAdmin: user.isAdmin
+                isAdmin: user.isAdmin,
+                verificationCode: user.verificationCode
             }
         });
     } catch (error) {
@@ -90,6 +105,16 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Backfill verification code if missing for current user
+        if (!user.verificationCode) {
+            const updatedUser = await prisma.user.update({
+                where: { id: user.id },
+                data: { verificationCode: generateVerificationCode() }
+            });
+            // Update local user object to reflect change
+            (user as any).verificationCode = updatedUser.verificationCode;
+        }
+
         res.json({
             id: user.id,
             telegramId: user.telegramId.toString(),
@@ -99,6 +124,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
             photoUrl: user.photoUrl,
             balance: user.balance,
             isAdmin: user.isAdmin,
+            verificationCode: user.verificationCode,
             stats: user._count
         });
     } catch (error) {
