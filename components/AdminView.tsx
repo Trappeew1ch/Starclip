@@ -249,3 +249,103 @@ export const AdminView: React.FC = () => {
         </div>
     );
 };
+
+const AdminClipsTab: React.FC = () => {
+    const [clips, setClips] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [offers, setOffers] = useState<any[]>([]);
+    const [filterOfferId, setFilterOfferId] = useState<string>('all');
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    useEffect(() => {
+        loadData();
+    }, [filterOfferId, page]);
+
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            const [clipsData, offersData] = await Promise.all([
+                adminApi.getClips({ offerId: filterOfferId, page, limit: 50 }),
+                offersApi.getAll()
+            ]);
+
+            setClips(clipsData.clips || []);
+            setTotalPages(clipsData.totalPages || 1);
+            setOffers(offersData || []);
+        } catch (error) {
+            console.error('Failed to load clips:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full">
+            {/* Filter */}
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                <button
+                    onClick={() => { setFilterOfferId('all'); setPage(1); }}
+                    className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${filterOfferId === 'all' ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+                >
+                    Все офферы
+                </button>
+                {offers.map(offer => (
+                    <button
+                        key={offer.id}
+                        onClick={() => { setFilterOfferId(offer.id); setPage(1); }}
+                        className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${filterOfferId === offer.id ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+                    >
+                        {offer.name}
+                    </button>
+                ))}
+            </div>
+
+            {/* Clips List */}
+            {isLoading ? (
+                <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div></div>
+            ) : (
+                <div className="space-y-3">
+                    {clips.map((clip) => {
+                        // Calculate days since creation
+                        const daysSinceCreation = Math.floor((new Date().getTime() - new Date(clip.createdAt).getTime()) / (1000 * 3600 * 24));
+                        const isReadyForPayout = daysSinceCreation >= 5;
+
+                        return (
+                            <div key={clip.id} className="bg-zinc-900/60 border border-white/5 rounded-xl p-4 hover:bg-zinc-800/60 transition-colors">
+                                <div className="flex justify-between items-start gap-3 mb-2">
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-xs font-bold text-zinc-400 bg-white/5 px-1.5 py-0.5 rounded">{clip.offer.name}</span>
+                                            <span className="text-[10px] text-zinc-600 font-mono">
+                                                {new Date(clip.createdAt).toLocaleDateString()}
+                                                {isReadyForPayout ? <span className="text-emerald-500 ml-1">✓</span> : <span className="text-amber-500 ml-1">Wait</span>}
+                                            </span>
+                                        </div>
+                                        <h4 className="font-medium text-white truncate text-sm leading-tight">{clip.title || 'Без названия'}</h4>
+                                        <div className="text-xs text-zinc-500 mt-0.5">@{clip.user.username}</div>
+                                    </div>
+                                    <div className="text-right whitespace-nowrap">
+                                        <div className="font-bold text-emerald-400 text-sm">+{clip.earnedAmount?.toFixed(0)} ₽</div>
+                                        <div className="text-xs text-zinc-500 flex items-center justify-end gap-1">
+                                            {clip.views} <Video size={10} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2 mt-2">
+                                    <span className={`px-2 py-0.5 rounded-full ${clip.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : clip.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                                        {clip.status}
+                                    </span>
+                                    <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-400 hover:text-blue-300">
+                                        Смотреть <ExternalLink size={10} />
+                                    </a>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {clips.length === 0 && <div className="text-center text-zinc-500 py-10">Клипы не найдены</div>}
+                </div>
+            )}
+        </div>
+    );
+};

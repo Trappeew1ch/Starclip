@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Youtube, Instagram, Music2, Clock, CheckCircle2, FileText, LayoutList, Plus, X, Download, ExternalLink, Play, UploadCloud, Link, AlertTriangle, MessageCircle, BarChart2, ArrowRight, ShieldCheck, Copy } from 'lucide-react';
 import { MyCampaign, SocialAccount, AccountVideo } from '../types';
 import { clipsApi, usersApi, campaignsApi } from '../services';
+import { useApp } from '../context';
 
 interface ClipsViewProps {
     campaigns: MyCampaign[];
 }
 
 export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
+    const { user } = useApp();
     // Data State
     const [accounts, setAccounts] = useState<SocialAccount[]>([]);
     const [videos, setVideos] = useState<AccountVideo[]>([]);
