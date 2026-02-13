@@ -70,7 +70,7 @@ export const AdminView: React.FC = () => {
 
     return (
         <div className="w-full min-h-screen pt-20 px-4 pb-24 flex flex-col items-center">
-            <h1 className="text-2xl font-bold text-white mb-6">Админ панель</h1>
+            <h1 className="text-2xl font-bold text-white mb-6">Админ панель v2.1 (Clips)</h1>
 
             {/* Navigation tabs */}
             <div className="flex bg-zinc-900 rounded-xl p-1 mb-6 border border-white/10 w-full max-w-md">
