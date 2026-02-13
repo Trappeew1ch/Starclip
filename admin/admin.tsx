@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard, Wallet } from 'lucide-react';
+import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard, Wallet, Video } from 'lucide-react';
 
 // Use relative URL so it works both locally and in production
 const API_URL = '/api';
@@ -204,9 +204,10 @@ function AdminLogin({ onLogin }: { onLogin: (id: string) => void }) {
 // Main Admin Panel
 function AdminPanel() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'clips' | 'users' | 'offers' | 'payouts'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'clips' | 'users' | 'offers' | 'payouts' | 'all_clips'>('dashboard');
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [pendingClips, setPendingClips] = useState<PendingClip[]>([]);
+    const [allClips, setAllClips] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [offers, setOffers] = useState<any[]>([]);
     const [payouts, setPayouts] = useState<any[]>([]);
@@ -279,6 +280,9 @@ function AdminPanel() {
             } else if (activeTab === 'clips') {
                 const clipsData = await adminRequest<PendingClip[]>('/admin/clips/pending');
                 setPendingClips(clipsData);
+            } else if (activeTab === 'all_clips') {
+                const clipsData = await adminRequest<any>('/admin/clips?limit=50');
+                setAllClips(clipsData.clips || []);
             } else if (activeTab === 'users') {
                 const params = new URLSearchParams({ page: '1' });
                 if (searchQuery) params.append('search', searchQuery);
@@ -522,7 +526,7 @@ function AdminPanel() {
             >
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
                     <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        StarClip Admin
+                        StarClip Admin v2.2
                     </h1>
                     <div className="flex items-center gap-4">
                         <button onClick={loadData} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
@@ -542,9 +546,10 @@ function AdminPanel() {
                         {[
                             { id: 'dashboard', icon: DollarSign, label: 'Дашборд' },
                             { id: 'clips', icon: Clock, label: 'Модерация', badge: stats?.pendingClips },
+                            { id: 'all_clips', icon: Film, label: 'Все Клипы' },
                             { id: 'payouts', icon: Wallet, label: 'Выплаты', badge: stats?.pendingPayouts },
                             { id: 'users', icon: Users, label: 'Пользователи' },
-                            { id: 'offers', icon: Film, label: 'Офферы' },
+                            { id: 'offers', icon: LayoutDashboard, label: 'Офферы' },
                         ].map(item => (
                             <button
                                 key={item.id}
@@ -679,6 +684,46 @@ function AdminPanel() {
                         </div>
                     )}
 
+                    {/* All Clips View */}
+                    {activeTab === 'all_clips' && (
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
+                            <h2 className="text-lg font-semibold mb-4">Все клипы (Последние 50)</h2>
+                            <div className="space-y-3">
+                                {allClips.map((clip: any) => {
+                                    const daysSinceCreation = Math.floor((new Date().getTime() - new Date(clip.createdAt).getTime()) / (1000 * 3600 * 24));
+                                    const isReadyForPayout = daysSinceCreation >= 5;
+                                    return (
+                                        <div key={clip.id} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
+                                            <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
+                                                <Video size={24} className="text-zinc-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-medium truncate">{clip.title || 'No Title'}</p>
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${clip.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
+                                                        {clip.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-zinc-500">
+                                                    @{clip.user.username} • {clip.offer.name}
+                                                    {isReadyForPayout && clip.status === 'approved' && <span className="text-emerald-500 ml-1">✓ Готов к выплате</span>}
+                                                </p>
+                                                <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">
+                                                    {clip.videoUrl}
+                                                </a>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-emerald-400">+{clip.earnedAmount?.toFixed(0)} ₽</p>
+                                                <p className="text-xs text-zinc-500">{clip.views} просмотров</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {allClips.length === 0 && <p className="text-center text-zinc-500 py-8">Клипов нет</p>}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Payouts */}
                     {activeTab === 'payouts' && (
                         <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
@@ -774,7 +819,14 @@ function AdminPanel() {
                                                     onClick={() => handleUserClick(user.id)}
                                                 >
                                                     <td className="p-4">
-                                                        <p className="font-medium">@{user.username || 'anonymous'}</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="font-medium">@{user.username || 'anonymous'}</p>
+                                                            {user.verificationCode && (
+                                                                <span className="text-[10px] bg-white/10 text-zinc-400 px-1.5 py-0.5 rounded font-mono border border-white/5">
+                                                                    {user.verificationCode}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         <p className="text-sm text-zinc-500">{user.firstName}</p>
                                                     </td>
                                                     <td className="p-4 text-emerald-400 font-medium">{user.balance.toFixed(0)} ₽</td>
