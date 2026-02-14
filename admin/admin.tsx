@@ -572,23 +572,7 @@ function AdminPanel() {
                             </button>
                         ))}
                     </div>
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
-                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                            : 'text-zinc-400 hover:bg-white/5 hover:text-white'
-                            }`}
-                    >
-                        <item.icon size={18} />
-                        <span className="font-medium text-sm">{item.label}</span>
-                        {item.badge !== undefined && item.badge > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                {item.badge}
-                            </span>
-                        )}
-                    </button>
-                        ))}
+
             </div>
         </nav>
 
@@ -1010,34 +994,7 @@ function AdminPanel() {
     </main>
             </div >
 
-        {/* Mobile Bottom Tabs */ }
-        < nav className = "fixed bottom-0 left-0 right-0 md:hidden bg-[#0f0f0f]/95 backdrop-blur-xl border-t border-white/10 z-50" >
-            <div className="flex justify-around items-center h-16 px-2">
-                {[
-                    { id: 'dashboard', icon: LayoutDashboard, label: 'Дашборд' },
-                    { id: 'clips', icon: Clock, label: 'Модерация', badge: stats?.pendingClips },
-                    { id: 'users', icon: Users, label: 'Юзеры' },
-                    { id: 'offers', icon: Film, label: 'Офферы' },
-                ].map(item => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        className={`relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all ${activeTab === item.id
-                            ? 'text-blue-400'
-                            : 'text-zinc-500'
-                            }`}
-                    >
-                        <item.icon size={20} />
-                        <span className="text-[10px] font-medium">{item.label}</span>
-                        {item.badge !== undefined && item.badge > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full">
-                                {item.badge}
-                            </span>
-                        )}
-                    </button>
-                ))}
-            </div>
-            </nav >
+
 
         {/* Approve Modal */ }
     {
@@ -1354,8 +1311,8 @@ function AdminPanel() {
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
                         className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all min-w-[64px] ${activeTab === item.id
-                                ? 'text-blue-400 bg-blue-500/10'
-                                : 'text-zinc-500 hover:text-zinc-300'
+                            ? 'text-blue-400 bg-blue-500/10'
+                            : 'text-zinc-500 hover:text-zinc-300'
                             }`}
                     >
                         <div className="relative">
