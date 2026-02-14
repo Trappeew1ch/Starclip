@@ -573,762 +573,761 @@ function AdminPanel() {
                         ))}
                     </div>
 
-            </div>
-        </nav>
+                </nav>
 
-                {/* Main Content */ }
-    <main className="flex-1 min-w-0">
-        {/* Dashboard */}
-        {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-                {/* Stats Grid - responsive */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {[
-                        { label: 'Пользователей', value: stats?.totalUsers || 0, color: 'text-blue-400' },
-                        { label: 'Активных офферов', value: stats?.activeOffers || 0, color: 'text-green-400' },
-                        { label: 'На модерации', value: stats?.pendingClips || 0, color: 'text-amber-400' },
-                        { label: 'Выплачено', value: `${((stats?.totalPaidOut || 0) / 1000).toFixed(0)}k ₽`, color: 'text-purple-400' },
-                    ].map((stat, i) => (
-                        <div key={i} className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
-                            <p className="text-zinc-500 text-sm mb-1">{stat.label}</p>
-                            <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                        </div>
-                    ))}
-                </div>
+                {/* Main Content */}
+                <main className="flex-1 min-w-0">
+                    {/* Dashboard */}
+                    {activeTab === 'dashboard' && (
+                        <div className="space-y-6">
+                            {/* Stats Grid - responsive */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                                {[
+                                    { label: 'Пользователей', value: stats?.totalUsers || 0, color: 'text-blue-400' },
+                                    { label: 'Активных офферов', value: stats?.activeOffers || 0, color: 'text-green-400' },
+                                    { label: 'На модерации', value: stats?.pendingClips || 0, color: 'text-amber-400' },
+                                    { label: 'Выплачено', value: `${((stats?.totalPaidOut || 0) / 1000).toFixed(0)}k ₽`, color: 'text-purple-400' },
+                                ].map((stat, i) => (
+                                    <div key={i} className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
+                                        <p className="text-zinc-500 text-sm mb-1">{stat.label}</p>
+                                        <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                                    </div>
+                                ))}
+                            </div>
 
-                {/* Recent Pending */}
-                <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold">Ожидают модерации</h2>
-                        <button onClick={() => setActiveTab('clips')} className="text-sm text-blue-400 hover:text-blue-300">
-                            Все →
-                        </button>
-                    </div>
-                    {pendingClips.length === 0 ? (
-                        <p className="text-zinc-500 text-center py-8">Нет клипов на модерации 🎉</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {pendingClips.map(clip => (
-                                <div key={clip.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-xl">
-                                    <div className="w-10 h-10 rounded-lg bg-zinc-700 flex items-center justify-center">
-                                        {getPlatformIcon(clip.platform)}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium truncate">@{clip.user.username || clip.user.firstName}</p>
-                                        <p className="text-xs text-zinc-500">{clip.offer.name} • {clip.offer.title}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => setApproveModal({ clip, views: '' })}
-                                            className="p-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20"
-                                        >
-                                            <Check size={16} />
-                                        </button>
-                                        <button
-                                            onClick={() => setRejectModal({ clip, reason: '' })}
-                                            className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
+                            {/* Recent Pending */}
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold">Ожидают модерации</h2>
+                                    <button onClick={() => setActiveTab('clips')} className="text-sm text-blue-400 hover:text-blue-300">
+                                        Все →
+                                    </button>
                                 </div>
-                            ))}
+                                {pendingClips.length === 0 ? (
+                                    <p className="text-zinc-500 text-center py-8">Нет клипов на модерации 🎉</p>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {pendingClips.map(clip => (
+                                            <div key={clip.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-xl">
+                                                <div className="w-10 h-10 rounded-lg bg-zinc-700 flex items-center justify-center">
+                                                    {getPlatformIcon(clip.platform)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">@{clip.user.username || clip.user.firstName}</p>
+                                                    <p className="text-xs text-zinc-500">{clip.offer.name} • {clip.offer.title}</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setApproveModal({ clip, views: '' })}
+                                                        className="p-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20"
+                                                    >
+                                                        <Check size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setRejectModal({ clip, reason: '' })}
+                                                        className="p-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
-                </div>
-            </div>
-        )}
 
-        {/* Clips Moderation */}
-        {activeTab === 'clips' && (
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
-                <h2 className="text-lg font-semibold mb-4">Клипы на модерации ({pendingClips.length})</h2>
-                {pendingClips.length === 0 ? (
-                    <p className="text-zinc-500 text-center py-12">Все клипы проверены! 🎉</p>
-                ) : (
-                    <div className="space-y-3">
-                        {pendingClips.map(clip => (
-                            <div key={clip.id} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
-                                <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
-                                    {getPlatformIcon(clip.platform)}
+                    {/* Clips Moderation */}
+                    {activeTab === 'clips' && (
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
+                            <h2 className="text-lg font-semibold mb-4">Клипы на модерации ({pendingClips.length})</h2>
+                            {pendingClips.length === 0 ? (
+                                <p className="text-zinc-500 text-center py-12">Все клипы проверены! 🎉</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {pendingClips.map(clip => (
+                                        <div key={clip.id} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
+                                            <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
+                                                {getPlatformIcon(clip.platform)}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-medium">@{clip.user.username || clip.user.firstName}</p>
+                                                <p className="text-sm text-zinc-500">{clip.offer.name} — {clip.offer.title}</p>
+                                                <a
+                                                    href={clip.videoUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-xs text-blue-400 hover:underline block truncate"
+                                                >
+                                                    {clip.videoUrl}
+                                                </a>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm text-zinc-400">CPM: {clip.offer.cpmRate} ₽</p>
+                                                <p className="text-xs text-zinc-500">{new Date(clip.createdAt).toLocaleDateString('ru-RU')}</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setApproveModal({ clip, views: '' })}
+                                                    className="px-4 py-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 font-medium text-sm"
+                                                >
+                                                    Принять
+                                                </button>
+                                                <button
+                                                    onClick={() => setRejectModal({ clip, reason: '' })}
+                                                    className="px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 font-medium text-sm"
+                                                >
+                                                    Отклонить
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium">@{clip.user.username || clip.user.firstName}</p>
-                                    <p className="text-sm text-zinc-500">{clip.offer.name} — {clip.offer.title}</p>
-                                    <a
-                                        href={clip.videoUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-xs text-blue-400 hover:underline block truncate"
-                                    >
-                                        {clip.videoUrl}
-                                    </a>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-zinc-400">CPM: {clip.offer.cpmRate} ₽</p>
-                                    <p className="text-xs text-zinc-500">{new Date(clip.createdAt).toLocaleDateString('ru-RU')}</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setApproveModal({ clip, views: '' })}
-                                        className="px-4 py-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 font-medium text-sm"
-                                    >
-                                        Принять
-                                    </button>
-                                    <button
-                                        onClick={() => setRejectModal({ clip, reason: '' })}
-                                        className="px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 font-medium text-sm"
-                                    >
-                                        Отклонить
-                                    </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* All Clips View */}
+                    {activeTab === 'all_clips' && (
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
+                            <h2 className="text-lg font-semibold mb-4">Все клипы (Последние 50)</h2>
+                            <div className="space-y-3">
+                                {allClips.map((clip: any) => {
+                                    const daysSinceCreation = Math.floor((new Date().getTime() - new Date(clip.createdAt).getTime()) / (1000 * 3600 * 24));
+                                    const isReadyForPayout = daysSinceCreation >= 5;
+                                    return (
+                                        <div key={clip.id} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
+                                            <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
+                                                <Video size={24} className="text-zinc-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-medium truncate">{clip.title || 'No Title'}</p>
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${clip.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
+                                                        {clip.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-zinc-500">
+                                                    @{clip.user.username} • {clip.offer.name}
+                                                    {isReadyForPayout && clip.status === 'approved' && <span className="text-emerald-500 ml-1">✓ Готов к выплате</span>}
+                                                </p>
+                                                <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">
+                                                    {clip.videoUrl}
+                                                </a>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-emerald-400">+{clip.earnedAmount?.toFixed(0)} ₽</p>
+                                                <p className="text-xs text-zinc-500">{clip.views} просмотров</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {allClips.length === 0 && <p className="text-center text-zinc-500 py-8">Клипов нет</p>}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Payouts */}
+                    {activeTab === 'payouts' && (
+                        <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
+                            <div className="p-4 border-b border-white/5">
+                                <h2 className="font-semibold text-lg text-white">Заявки на вывод</h2>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="text-zinc-400 bg-white/5">
+                                        <tr>
+                                            <th className="px-4 py-3 font-medium">Пользователь</th>
+                                            <th className="px-4 py-3 font-medium">Telegram ID</th>
+                                            <th className="px-4 py-3 font-medium">Сумма</th>
+                                            <th className="px-4 py-3 font-medium">Реквизиты</th>
+                                            <th className="px-4 py-3 font-medium">Дата</th>
+                                            <th className="px-4 py-3 font-medium">Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {payouts.map(req => (
+                                            <tr key={req.id} className="hover:bg-white/5 transition-colors">
+                                                <td className="px-4 py-3 text-white">
+                                                    <div className="font-medium">{req.user.firstName}</div>
+                                                    <div className="text-xs text-zinc-500">@{req.user.username}</div>
+                                                </td>
+                                                <td className="px-4 py-3 font-mono text-zinc-400 text-xs">{req.user.telegramId}</td>
+                                                <td className="px-4 py-3 text-green-400 font-bold">{req.amount} ₽</td>
+                                                <td className="px-4 py-3 text-zinc-300">{req.wallet || 'Не указан'}</td>
+                                                <td className="px-4 py-3 text-zinc-500">{new Date(req.createdAt).toLocaleDateString()}</td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handlePayoutConfirm(req.id)}
+                                                            className="p-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500/20 transition-colors"
+                                                            title="Подтвердить выплату"
+                                                        >
+                                                            <Check size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handlePayoutReject(req.id)}
+                                                            className="p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors"
+                                                            title="Отклонить"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {payouts.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">Нет активных заявок на вывод</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Users */}
+                    {activeTab === 'users' && !selectedUser && (
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Поиск по username..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && loadData()}
+                                    className="w-full pl-12 pr-4 py-3 bg-zinc-900/50 border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50"
+                                />
+                            </div>
+
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full min-w-[500px]">
+                                        <thead>
+                                            <tr className="border-b border-white/5">
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Пользователь</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Баланс</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Клипы</th>
+                                                <th className="text-left p-4 text-sm font-medium text-zinc-500">Кампании</th>
+                                                <th className="p-4"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {users.map(user => (
+                                                <tr
+                                                    key={user.id}
+                                                    className="border-b border-white/5 hover:bg-white/5 cursor-pointer"
+                                                    onClick={() => handleUserClick(user.id)}
+                                                >
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="font-medium">@{user.username || 'anonymous'}</p>
+                                                            {user.verificationCode && (
+                                                                <span className="text-[10px] bg-white/10 text-zinc-400 px-1.5 py-0.5 rounded font-mono border border-white/5">
+                                                                    {user.verificationCode}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm text-zinc-500">{user.firstName}</p>
+                                                    </td>
+                                                    <td className="p-4 text-emerald-400 font-medium">{user.balance.toFixed(0)} ₽</td>
+                                                    <td className="p-4">{user.clipsCount}</td>
+                                                    <td className="p-4">{user.campaignsCount}</td>
+                                                    <td className="p-4"><ChevronRight size={16} className="text-zinc-500" /></td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        )}
+                        </div>
+                    )}
 
-        {/* All Clips View */}
-        {activeTab === 'all_clips' && (
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
-                <h2 className="text-lg font-semibold mb-4">Все клипы (Последние 50)</h2>
-                <div className="space-y-3">
-                    {allClips.map((clip: any) => {
-                        const daysSinceCreation = Math.floor((new Date().getTime() - new Date(clip.createdAt).getTime()) / (1000 * 3600 * 24));
-                        const isReadyForPayout = daysSinceCreation >= 5;
-                        return (
-                            <div key={clip.id} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-xl border border-white/5">
-                                <div className="w-12 h-12 rounded-xl bg-zinc-700 flex items-center justify-center">
-                                    <Video size={24} className="text-zinc-400" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-medium truncate">{clip.title || 'No Title'}</p>
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${clip.status === 'approved' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-zinc-500/10 text-zinc-400'}`}>
-                                            {clip.status}
-                                        </span>
+                    {/* User Detail */}
+                    {activeTab === 'users' && selectedUser && (
+                        <div className="space-y-6">
+                            <button onClick={() => setSelectedUser(null)} className="text-sm text-blue-400 hover:text-blue-300">
+                                ← Назад к списку
+                            </button>
+
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl font-bold">
+                                        {selectedUser.firstName?.[0] || '@'}
                                     </div>
-                                    <p className="text-sm text-zinc-500">
-                                        @{clip.user.username} • {clip.offer.name}
-                                        {isReadyForPayout && clip.status === 'approved' && <span className="text-emerald-500 ml-1">✓ Готов к выплате</span>}
-                                    </p>
-                                    <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">
-                                        {clip.videoUrl}
-                                    </a>
+                                    <div>
+                                        <h2 className="text-xl font-bold">@{selectedUser.username || 'anonymous'}</h2>
+                                        <p className="text-zinc-500">{selectedUser.firstName} {selectedUser.lastName}</p>
+                                        <p className="text-xs text-zinc-600">Telegram ID: {selectedUser.telegramId}</p>
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-2xl font-bold text-emerald-400">{selectedUser.balance.toFixed(0)} ₽</p>
+                                        <p className="text-sm text-zinc-500">Баланс</p>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="font-bold text-emerald-400">+{clip.earnedAmount?.toFixed(0)} ₽</p>
-                                    <p className="text-xs text-zinc-500">{clip.views} просмотров</p>
+
+                                {/* PAYOUT SECTION */}
+                                <div className="mb-6 bg-zinc-800/30 p-4 rounded-xl border border-white/5">
+                                    <h4 className="font-bold mb-3 text-sm">Списание / Выплата</h4>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="number"
+                                            placeholder="Сумма"
+                                            value={payoutAmount}
+                                            onChange={e => setPayoutAmount(e.target.value)}
+                                            className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white w-32"
+                                        />
+                                        <button onClick={() => setPayoutAmount(selectedUser.balance.toString())} className="px-3 py-2 bg-zinc-700 rounded-lg text-xs">MAX</button>
+                                        <button onClick={handlePayout} className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-sm">
+                                            Выплатить
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                                        <p className="text-zinc-500 text-sm">Всего заработал</p>
+                                        <p className="text-xl font-bold text-white">{selectedUser.stats.totalEarned.toFixed(0)} ₽</p>
+                                    </div>
+                                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                                        <p className="text-zinc-500 text-sm">Просмотров</p>
+                                        <p className="text-xl font-bold text-white">{selectedUser.stats.totalViews}</p>
+                                    </div>
+                                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                                        <p className="text-zinc-500 text-sm">Одобрено</p>
+                                        <p className="text-xl font-bold text-emerald-400">{selectedUser.stats.approvedClips}</p>
+                                    </div>
+                                    <div className="bg-zinc-800/50 rounded-xl p-4">
+                                        <p className="text-zinc-500 text-sm">Отклонено</p>
+                                        <p className="text-xl font-bold text-red-400">{selectedUser.stats.rejectedClips}</p>
+                                    </div>
                                 </div>
                             </div>
-                        );
-                    })}
-                    {allClips.length === 0 && <p className="text-center text-zinc-500 py-8">Клипов нет</p>}
-                </div>
-            </div>
-        )}
 
-        {/* Payouts */}
-        {activeTab === 'payouts' && (
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
-                <div className="p-4 border-b border-white/5">
-                    <h2 className="font-semibold text-lg text-white">Заявки на вывод</h2>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="text-zinc-400 bg-white/5">
-                            <tr>
-                                <th className="px-4 py-3 font-medium">Пользователь</th>
-                                <th className="px-4 py-3 font-medium">Telegram ID</th>
-                                <th className="px-4 py-3 font-medium">Сумма</th>
-                                <th className="px-4 py-3 font-medium">Реквизиты</th>
-                                <th className="px-4 py-3 font-medium">Дата</th>
-                                <th className="px-4 py-3 font-medium">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {payouts.map(req => (
-                                <tr key={req.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="px-4 py-3 text-white">
-                                        <div className="font-medium">{req.user.firstName}</div>
-                                        <div className="text-xs text-zinc-500">@{req.user.username}</div>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono text-zinc-400 text-xs">{req.user.telegramId}</td>
-                                    <td className="px-4 py-3 text-green-400 font-bold">{req.amount} ₽</td>
-                                    <td className="px-4 py-3 text-zinc-300">{req.wallet || 'Не указан'}</td>
-                                    <td className="px-4 py-3 text-zinc-500">{new Date(req.createdAt).toLocaleDateString()}</td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex gap-2">
+                            {/* User Clips */}
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
+                                <h3 className="text-lg font-semibold mb-4">Клипы ({selectedUser.clips.length})</h3>
+                                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                                    {selectedUser.clips.map((clip: any) => (
+                                        <div key={clip.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-lg">
+                                            <div className={`w-2 h-2 rounded-full ${clip.status === 'approved' ? 'bg-emerald-500' :
+                                                clip.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
+                                                }`}></div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium">{clip.offerName}</p>
+                                                <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{clip.platform} • {clip.videoUrl}</a>
+                                                <p className="text-xs text-zinc-500">{clip.views} просм.</p>
+                                            </div>
+                                            <p className="text-sm font-medium text-emerald-400">{clip.earnedAmount.toFixed(0)} ₽</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Offers */}
+                    {activeTab === 'offers' && (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-lg font-semibold">Офферы ({offers.length})</h2>
+                                <button
+                                    onClick={() => {
+                                        setEditingOfferId(null);
+                                        setOfferForm({
+                                            name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
+                                            totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
+                                            description: '', requirements: '', assetsLink: '', daysLeft: '30'
+                                        });
+                                        setImageFile(null);
+                                        setImagePreview('');
+                                        setAvatarFile(null);
+                                        setAvatarPreview('');
+                                        setShowOfferForm(true);
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium text-sm transition-colors"
+                                >
+                                    <Plus size={16} />
+                                    Добавить оффер
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {offers.map(offer => (
+                                    <div key={offer.id} className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-white/5 rounded-xl">
+                                        <img src={offer.avatarUrl || offer.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium">{offer.name}</p>
+                                            <p className="text-sm text-zinc-500">{offer.title}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-medium">{offer.cpmRate} ₽ CPM</p>
+                                            <p className="text-sm text-zinc-500">{(offer.paidOutPercentage || 0).toFixed(0)}% выплачено</p>
+                                        </div>
+                                        <span className={`px-2 py-1 rounded text-xs font-medium ${offer.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-700 text-zinc-400'
+                                            }`}>
+                                            {offer.isActive ? 'Активен' : 'Неактивен'}
+                                        </span>
+                                        <div className="flex items-center gap-2">
                                             <button
-                                                onClick={() => handlePayoutConfirm(req.id)}
-                                                className="p-1.5 bg-green-500/10 text-green-400 rounded hover:bg-green-500/20 transition-colors"
-                                                title="Подтвердить выплату"
+                                                onClick={() => handleEditOffer(offer)}
+                                                className="px-3 py-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded text-sm"
                                             >
-                                                <Check size={16} />
+                                                Изм.
                                             </button>
                                             <button
-                                                onClick={() => handlePayoutReject(req.id)}
-                                                className="p-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors"
-                                                title="Отклонить"
+                                                onClick={() => handleToggleOffer(offer.id)}
+                                                className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
                                             >
-                                                <X size={16} />
+                                                {offer.isActive ? 'Откл.' : 'Вкл.'}
                                             </button>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {payouts.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="px-4 py-12 text-center text-zinc-500">Нет активных заявок на вывод</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        )}
-
-        {/* Users */}
-        {activeTab === 'users' && !selectedUser && (
-            <div className="space-y-4">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Поиск по username..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && loadData()}
-                        className="w-full pl-12 pr-4 py-3 bg-zinc-900/50 border border-white/5 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50"
-                    />
-                </div>
-
-                <div className="bg-zinc-900/50 border border-white/5 rounded-2xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[500px]">
-                            <thead>
-                                <tr className="border-b border-white/5">
-                                    <th className="text-left p-4 text-sm font-medium text-zinc-500">Пользователь</th>
-                                    <th className="text-left p-4 text-sm font-medium text-zinc-500">Баланс</th>
-                                    <th className="text-left p-4 text-sm font-medium text-zinc-500">Клипы</th>
-                                    <th className="text-left p-4 text-sm font-medium text-zinc-500">Кампании</th>
-                                    <th className="p-4"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map(user => (
-                                    <tr
-                                        key={user.id}
-                                        className="border-b border-white/5 hover:bg-white/5 cursor-pointer"
-                                        onClick={() => handleUserClick(user.id)}
-                                    >
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-medium">@{user.username || 'anonymous'}</p>
-                                                {user.verificationCode && (
-                                                    <span className="text-[10px] bg-white/10 text-zinc-400 px-1.5 py-0.5 rounded font-mono border border-white/5">
-                                                        {user.verificationCode}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-sm text-zinc-500">{user.firstName}</p>
-                                        </td>
-                                        <td className="p-4 text-emerald-400 font-medium">{user.balance.toFixed(0)} ₽</td>
-                                        <td className="p-4">{user.clipsCount}</td>
-                                        <td className="p-4">{user.campaignsCount}</td>
-                                        <td className="p-4"><ChevronRight size={16} className="text-zinc-500" /></td>
-                                    </tr>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* User Detail */}
-        {activeTab === 'users' && selectedUser && (
-            <div className="space-y-6">
-                <button onClick={() => setSelectedUser(null)} className="text-sm text-blue-400 hover:text-blue-300">
-                    ← Назад к списку
-                </button>
-
-                <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl font-bold">
-                            {selectedUser.firstName?.[0] || '@'}
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold">@{selectedUser.username || 'anonymous'}</h2>
-                            <p className="text-zinc-500">{selectedUser.firstName} {selectedUser.lastName}</p>
-                            <p className="text-xs text-zinc-600">Telegram ID: {selectedUser.telegramId}</p>
-                        </div>
-                        <div className="ml-auto text-right">
-                            <p className="text-2xl font-bold text-emerald-400">{selectedUser.balance.toFixed(0)} ₽</p>
-                            <p className="text-sm text-zinc-500">Баланс</p>
-                        </div>
-                    </div>
-
-                    {/* PAYOUT SECTION */}
-                    <div className="mb-6 bg-zinc-800/30 p-4 rounded-xl border border-white/5">
-                        <h4 className="font-bold mb-3 text-sm">Списание / Выплата</h4>
-                        <div className="flex gap-2">
-                            <input
-                                type="number"
-                                placeholder="Сумма"
-                                value={payoutAmount}
-                                onChange={e => setPayoutAmount(e.target.value)}
-                                className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white w-32"
-                            />
-                            <button onClick={() => setPayoutAmount(selectedUser.balance.toString())} className="px-3 py-2 bg-zinc-700 rounded-lg text-xs">MAX</button>
-                            <button onClick={handlePayout} className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-bold text-sm">
-                                Выплатить
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                        <div className="bg-zinc-800/50 rounded-xl p-4">
-                            <p className="text-zinc-500 text-sm">Всего заработал</p>
-                            <p className="text-xl font-bold text-white">{selectedUser.stats.totalEarned.toFixed(0)} ₽</p>
-                        </div>
-                        <div className="bg-zinc-800/50 rounded-xl p-4">
-                            <p className="text-zinc-500 text-sm">Просмотров</p>
-                            <p className="text-xl font-bold text-white">{selectedUser.stats.totalViews}</p>
-                        </div>
-                        <div className="bg-zinc-800/50 rounded-xl p-4">
-                            <p className="text-zinc-500 text-sm">Одобрено</p>
-                            <p className="text-xl font-bold text-emerald-400">{selectedUser.stats.approvedClips}</p>
-                        </div>
-                        <div className="bg-zinc-800/50 rounded-xl p-4">
-                            <p className="text-zinc-500 text-sm">Отклонено</p>
-                            <p className="text-xl font-bold text-red-400">{selectedUser.stats.rejectedClips}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* User Clips */}
-                <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
-                    <h3 className="text-lg font-semibold mb-4">Клипы ({selectedUser.clips.length})</h3>
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                        {selectedUser.clips.map((clip: any) => (
-                            <div key={clip.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-lg">
-                                <div className={`w-2 h-2 rounded-full ${clip.status === 'approved' ? 'bg-emerald-500' :
-                                    clip.status === 'rejected' ? 'bg-red-500' : 'bg-amber-500'
-                                    }`}></div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">{clip.offerName}</p>
-                                    <a href={clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">{clip.platform} • {clip.videoUrl}</a>
-                                    <p className="text-xs text-zinc-500">{clip.views} просм.</p>
-                                </div>
-                                <p className="text-sm font-medium text-emerald-400">{clip.earnedAmount.toFixed(0)} ₽</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Offers */}
-        {activeTab === 'offers' && (
-            <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">Офферы ({offers.length})</h2>
-                    <button
-                        onClick={() => {
-                            setEditingOfferId(null);
-                            setOfferForm({
-                                name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
-                                totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
-                                description: '', requirements: '', assetsLink: '', daysLeft: '30'
-                            });
-                            setImageFile(null);
-                            setImagePreview('');
-                            setAvatarFile(null);
-                            setAvatarPreview('');
-                            setShowOfferForm(true);
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg font-medium text-sm transition-colors"
-                    >
-                        <Plus size={16} />
-                        Добавить оффер
-                    </button>
-                </div>
-
-                <div className="space-y-3">
-                    {offers.map(offer => (
-                        <div key={offer.id} className="flex items-center gap-4 p-4 bg-zinc-900/50 border border-white/5 rounded-xl">
-                            <img src={offer.avatarUrl || offer.imageUrl} alt="" className="w-12 h-12 rounded-xl object-cover" />
-                            <div className="flex-1 min-w-0">
-                                <p className="font-medium">{offer.name}</p>
-                                <p className="text-sm text-zinc-500">{offer.title}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="font-medium">{offer.cpmRate} ₽ CPM</p>
-                                <p className="text-sm text-zinc-500">{(offer.paidOutPercentage || 0).toFixed(0)}% выплачено</p>
-                            </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${offer.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-700 text-zinc-400'
-                                }`}>
-                                {offer.isActive ? 'Активен' : 'Неактивен'}
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handleEditOffer(offer)}
-                                    className="px-3 py-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded text-sm"
-                                >
-                                    Изм.
-                                </button>
-                                <button
-                                    onClick={() => handleToggleOffer(offer.id)}
-                                    className="px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm"
-                                >
-                                    {offer.isActive ? 'Откл.' : 'Вкл.'}
-                                </button>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-        )}
-    </main>
+                    )}
+                </main>
             </div >
 
 
 
-        {/* Approve Modal */ }
-    {
-        approveModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md">
-                    <h3 className="text-lg font-bold mb-4">Одобрить клип</h3>
-                    <p className="text-zinc-400 text-sm mb-2">@{approveModal.clip.user.username} • {approveModal.clip.offer.name}</p>
-                    <a href={approveModal.clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline block mb-4 truncate">
-                        {approveModal.clip.videoUrl}
-                    </a>
+            {/* Approve Modal */}
+            {
+                approveModal && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+                            <h3 className="text-lg font-bold mb-4">Одобрить клип</h3>
+                            <p className="text-zinc-400 text-sm mb-2">@{approveModal.clip.user.username} • {approveModal.clip.offer.name}</p>
+                            <a href={approveModal.clip.videoUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline block mb-4 truncate">
+                                {approveModal.clip.videoUrl}
+                            </a>
 
-                    <div className="mb-4">
-                        <label className="block text-sm text-zinc-500 mb-2">Количество просмотров</label>
-                        <input
-                            type="number"
-                            value={approveModal.views}
-                            onChange={(e) => setApproveModal({ ...approveModal, views: e.target.value })}
-                            placeholder="0"
-                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                        />
-                        <p className="text-xs text-zinc-500 mt-1">
-                            Заработок: {((parseInt(approveModal.views) || 0) / 1000 * approveModal.clip.offer.cpmRate).toFixed(0)} ₽
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button onClick={() => setApproveModal(null)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium">
-                            Отмена
-                        </button>
-                        <button onClick={handleApprove} className="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-medium">
-                            Одобрить
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    {/* Reject Modal */ }
-    {
-        rejectModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-                <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md">
-                    <h3 className="text-lg font-bold mb-4">Отклонить клип</h3>
-                    <p className="text-zinc-400 text-sm mb-4">@{rejectModal.clip.user.username} • {rejectModal.clip.offer.name}</p>
-
-                    <div className="mb-4">
-                        <label className="block text-sm text-zinc-500 mb-2">Причина отклонения</label>
-                        <textarea
-                            value={rejectModal.reason}
-                            onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
-                            placeholder="Укажите причину..."
-                            rows={3}
-                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
-                        />
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button onClick={() => setRejectModal(null)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium">
-                            Отмена
-                        </button>
-                        <button
-                            onClick={handleReject}
-                            disabled={!rejectModal.reason.trim()}
-                            className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Отклонить
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    {/* Create Offer Modal */ }
-    {
-        showOfferForm && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-                <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl my-8">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-bold">{editingOfferId ? 'Редактировать оффер' : 'Создать оффер'}</h3>
-                        <button onClick={() => setShowOfferForm(false)} className="text-zinc-400 hover:text-white">
-                            <X size={24} />
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleCreateOrUpdateOffer} className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Имя блогера *</label>
+                            <div className="mb-4">
+                                <label className="block text-sm text-zinc-500 mb-2">Количество просмотров</label>
                                 <input
-                                    type="text"
-                                    value={offerForm.name}
-                                    onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })}
-                                    placeholder="Exile"
-                                    required
+                                    type="number"
+                                    value={approveModal.views}
+                                    onChange={(e) => setApproveModal({ ...approveModal, views: e.target.value })}
+                                    placeholder="0"
                                     className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
                                 />
+                                <p className="text-xs text-zinc-500 mt-1">
+                                    Заработок: {((parseInt(approveModal.views) || 0) / 1000 * approveModal.clip.offer.cpmRate).toFixed(0)} ₽
+                                </p>
                             </div>
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Название кампании *</label>
-                                <input
-                                    type="text"
-                                    value={offerForm.title}
-                                    onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
-                                    placeholder="Смешные моменты"
-                                    required
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                />
+
+                            <div className="flex gap-3">
+                                <button onClick={() => setApproveModal(null)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium">
+                                    Отмена
+                                </button>
+                                <button onClick={handleApprove} className="flex-1 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-medium">
+                                    Одобрить
+                                </button>
                             </div>
                         </div>
+                    </div>
+                )
+            }
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Тип</label>
-                                <select
-                                    value={offerForm.type}
-                                    onChange={(e) => setOfferForm({ ...offerForm, type: e.target.value })}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+            {/* Reject Modal */}
+            {
+                rejectModal && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+                            <h3 className="text-lg font-bold mb-4">Отклонить клип</h3>
+                            <p className="text-zinc-400 text-sm mb-4">@{rejectModal.clip.user.username} • {rejectModal.clip.offer.name}</p>
+
+                            <div className="mb-4">
+                                <label className="block text-sm text-zinc-500 mb-2">Причина отклонения</label>
+                                <textarea
+                                    value={rejectModal.reason}
+                                    onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+                                    placeholder="Укажите причину..."
+                                    rows={3}
+                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button onClick={() => setRejectModal(null)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium">
+                                    Отмена
+                                </button>
+                                <button
+                                    onClick={handleReject}
+                                    disabled={!rejectModal.reason.trim()}
+                                    className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <option value="STREAMER">Стример</option>
-                                    <option value="YOUTUBER">Ютубер</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Язык</label>
-                                <input
-                                    type="text"
-                                    value={offerForm.language}
-                                    onChange={(e) => setOfferForm({ ...offerForm, language: e.target.value })}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                />
+                                    Отклонить
+                                </button>
                             </div>
                         </div>
+                    </div>
+                )
+            }
 
-                        <div className="grid grid-cols-3 gap-4">
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Бюджет (₽) *</label>
-                                <input
-                                    type="number"
-                                    value={offerForm.totalBudget}
-                                    onChange={(e) => setOfferForm({ ...offerForm, totalBudget: e.target.value })}
-                                    placeholder="1500000"
-                                    required
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                />
+            {/* Create Offer Modal */}
+            {
+                showOfferForm && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl my-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold">{editingOfferId ? 'Редактировать оффер' : 'Создать оффер'}</h3>
+                                <button onClick={() => setShowOfferForm(false)} className="text-zinc-400 hover:text-white">
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">CPM (₽) *</label>
-                                <input
-                                    type="number"
-                                    value={offerForm.cpmRate}
-                                    onChange={(e) => setOfferForm({ ...offerForm, cpmRate: e.target.value })}
-                                    placeholder="500"
-                                    required
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2">Дней</label>
-                                <input
-                                    type="number"
-                                    value={offerForm.daysLeft}
-                                    onChange={(e) => setOfferForm({ ...offerForm, daysLeft: e.target.value })}
-                                    className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                                />
-                            </div>
-                        </div>
 
-
-                        <div className="grid grid-cols-2 gap-6">
-                            {/* Main Image Upload */}
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
-                                    <Image size={14} />
-                                    Главное изображение *
-                                </label>
-                                <div className="space-y-2">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
-                                        {(imagePreview || offerForm.imageUrl) ? (
-                                            <img
-                                                src={imagePreview || getImgUrl(offerForm.imageUrl)}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
-                                            />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
-                                                <Upload size={24} className="mb-2" />
-                                                <p className="text-xs">Загрузить файл</p>
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
-                                        </div>
+                            <form onSubmit={handleCreateOrUpdateOffer} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Имя блогера *</label>
                                         <input
-                                            type="file"
-                                            accept="image/*"
-                                            required={!offerForm.imageUrl && !imageFile}
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setImageFile(file);
-                                                    setImagePreview(URL.createObjectURL(file));
-                                                }
-                                            }}
-                                            className="hidden"
+                                            type="text"
+                                            value={offerForm.name}
+                                            onChange={(e) => setOfferForm({ ...offerForm, name: e.target.value })}
+                                            placeholder="Exile"
+                                            required
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
                                         />
-                                    </label>
-                                    <p className="text-[10px] text-zinc-600 text-center">Отображается в ленте офферов</p>
-                                </div>
-                            </div>
-
-                            {/* Avatar Upload */}
-                            <div>
-                                <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
-                                    <Users size={14} />
-                                    Аватар *
-                                </label>
-                                <div className="space-y-2">
-                                    <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
-                                        {(avatarPreview || offerForm.avatarUrl) ? (
-                                            <img
-                                                src={avatarPreview || getImgUrl(offerForm.avatarUrl)}
-                                                alt="Preview"
-                                                className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
-                                            />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
-                                                <Upload size={24} className="mb-2" />
-                                                <p className="text-xs">Загрузить файл</p>
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
-                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Название кампании *</label>
                                         <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    setAvatarFile(file);
-                                                    setAvatarPreview(URL.createObjectURL(file));
-                                                }
-                                            }}
-                                            className="hidden"
+                                            type="text"
+                                            value={offerForm.title}
+                                            onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
+                                            placeholder="Смешные моменты"
+                                            required
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
                                         />
-                                    </label>
-                                    <p className="text-[10px] text-zinc-600 text-center">Иконка канала/блогера</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <div>
-                            <label className="block text-sm text-zinc-500 mb-2">Описание</label>
-                            <textarea
-                                value={offerForm.description}
-                                onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
-                                placeholder="Делайте нарезки..."
-                                rows={3}
-                                className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
-                            />
-                        </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Тип</label>
+                                        <select
+                                            value={offerForm.type}
+                                            onChange={(e) => setOfferForm({ ...offerForm, type: e.target.value })}
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                        >
+                                            <option value="STREAMER">Стример</option>
+                                            <option value="YOUTUBER">Ютубер</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Язык</label>
+                                        <input
+                                            type="text"
+                                            value={offerForm.language}
+                                            onChange={(e) => setOfferForm({ ...offerForm, language: e.target.value })}
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                        />
+                                    </div>
+                                </div>
 
-                        <div>
-                            <label className="block text-sm text-zinc-500 mb-2">Требования (по одному на строку)</label>
-                            <textarea
-                                value={offerForm.requirements}
-                                onChange={(e) => setOfferForm({ ...offerForm, requirements: e.target.value })}
-                                placeholder="Смех: самые разрывные моменты&#10;Эмоции: испуг, удивление&#10;Монтаж: динамичный"
-                                rows={4}
-                                className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
-                            />
-                        </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Бюджет (₽) *</label>
+                                        <input
+                                            type="number"
+                                            value={offerForm.totalBudget}
+                                            onChange={(e) => setOfferForm({ ...offerForm, totalBudget: e.target.value })}
+                                            placeholder="1500000"
+                                            required
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">CPM (₽) *</label>
+                                        <input
+                                            type="number"
+                                            value={offerForm.cpmRate}
+                                            onChange={(e) => setOfferForm({ ...offerForm, cpmRate: e.target.value })}
+                                            placeholder="500"
+                                            required
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2">Дней</label>
+                                        <input
+                                            type="number"
+                                            value={offerForm.daysLeft}
+                                            onChange={(e) => setOfferForm({ ...offerForm, daysLeft: e.target.value })}
+                                            className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                        />
+                                    </div>
+                                </div>
 
-                        <div>
-                            <label className="block text-sm text-zinc-500 mb-2">Ссылка на материалы</label>
-                            <input
-                                type="url"
-                                value={offerForm.assetsLink}
-                                onChange={(e) => setOfferForm({ ...offerForm, assetsLink: e.target.value })}
-                                placeholder="https://drive.google.com/..."
-                                className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
-                            />
-                        </div>
 
-                        <div className="flex gap-3 pt-4">
-                            <button type="button" onClick={() => setShowOfferForm(false)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium" disabled={isUploading}>
-                                Отмена
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Main Image Upload */}
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
+                                            <Image size={14} />
+                                            Главное изображение *
+                                        </label>
+                                        <div className="space-y-2">
+                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
+                                                {(imagePreview || offerForm.imageUrl) ? (
+                                                    <img
+                                                        src={imagePreview || getImgUrl(offerForm.imageUrl)}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                    />
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
+                                                        <Upload size={24} className="mb-2" />
+                                                        <p className="text-xs">Загрузить файл</p>
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    required={!offerForm.imageUrl && !imageFile}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setImageFile(file);
+                                                            setImagePreview(URL.createObjectURL(file));
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                            <p className="text-[10px] text-zinc-600 text-center">Отображается в ленте офферов</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Avatar Upload */}
+                                    <div>
+                                        <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
+                                            <Users size={14} />
+                                            Аватар *
+                                        </label>
+                                        <div className="space-y-2">
+                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
+                                                {(avatarPreview || offerForm.avatarUrl) ? (
+                                                    <img
+                                                        src={avatarPreview || getImgUrl(offerForm.avatarUrl)}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+                                                    />
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
+                                                        <Upload size={24} className="mb-2" />
+                                                        <p className="text-xs">Загрузить файл</p>
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setAvatarFile(file);
+                                                            setAvatarPreview(URL.createObjectURL(file));
+                                                        }
+                                                    }}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                            <p className="text-[10px] text-zinc-600 text-center">Иконка канала/блогера</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm text-zinc-500 mb-2">Описание</label>
+                                    <textarea
+                                        value={offerForm.description}
+                                        onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
+                                        placeholder="Делайте нарезки..."
+                                        rows={3}
+                                        className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm text-zinc-500 mb-2">Требования (по одному на строку)</label>
+                                    <textarea
+                                        value={offerForm.requirements}
+                                        onChange={(e) => setOfferForm({ ...offerForm, requirements: e.target.value })}
+                                        placeholder="Смех: самые разрывные моменты&#10;Эмоции: испуг, удивление&#10;Монтаж: динамичный"
+                                        rows={4}
+                                        className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white resize-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm text-zinc-500 mb-2">Ссылка на материалы</label>
+                                    <input
+                                        type="url"
+                                        value={offerForm.assetsLink}
+                                        onChange={(e) => setOfferForm({ ...offerForm, assetsLink: e.target.value })}
+                                        placeholder="https://drive.google.com/..."
+                                        className="w-full px-4 py-3 bg-zinc-800 border border-white/5 rounded-lg text-white"
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button type="button" onClick={() => setShowOfferForm(false)} className="flex-1 py-3 bg-zinc-800 rounded-lg font-medium" disabled={isUploading}>
+                                        Отмена
+                                    </button>
+                                    <button type="submit" disabled={isUploading} className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-700 disabled:cursor-wait rounded-lg font-medium flex items-center justify-center gap-2">
+                                        {isUploading ? (
+                                            <>
+                                                <RefreshCw className="animate-spin" size={16} />
+                                                Загрузка...
+                                            </>
+                                        ) : (
+                                            editingOfferId ? 'Сохранить изменения' : 'Создать оффер'
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+            {/* Mobile Bottom Navigation */}
+            <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+                <div className="glass-shine rounded-2xl p-2 bg-[#09090b]/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-x-auto no-scrollbar">
+                    <div className="flex justify-between items-center min-w-max px-2 gap-1">
+                        {navItems.map((item: any) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id as any)}
+                                className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all min-w-[64px] ${activeTab === item.id
+                                    ? 'text-blue-400 bg-blue-500/10'
+                                    : 'text-zinc-500 hover:text-zinc-300'
+                                    }`}
+                            >
+                                <div className="relative">
+                                    <item.icon size={20} />
+                                    {item.badge !== undefined && item.badge > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>
                             </button>
-                            <button type="submit" disabled={isUploading} className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-zinc-700 disabled:cursor-wait rounded-lg font-medium flex items-center justify-center gap-2">
-                                {isUploading ? (
-                                    <>
-                                        <RefreshCw className="animate-spin" size={16} />
-                                        Загрузка...
-                                    </>
-                                ) : (
-                                    editingOfferId ? 'Сохранить изменения' : 'Создать оффер'
-                                )}
-                            </button>
-                        </div>
-                    </form>
+                        ))}
+                    </div>
                 </div>
             </div>
-        )
-    }
-    {/* Mobile Bottom Navigation */ }
-    <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-        <div className="glass-shine rounded-2xl p-2 bg-[#09090b]/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-x-auto no-scrollbar">
-            <div className="flex justify-between items-center min-w-max px-2 gap-1">
-                {navItems.map((item: any) => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActiveTab(item.id as any)}
-                        className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all min-w-[64px] ${activeTab === item.id
-                            ? 'text-blue-400 bg-blue-500/10'
-                            : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                    >
-                        <div className="relative">
-                            <item.icon size={20} />
-                            {item.badge !== undefined && item.badge > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                                    {item.badge}
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>
-                    </button>
-                ))}
-            </div>
-        </div>
-    </div>
         </div >
     );
 }
