@@ -396,20 +396,16 @@ function AdminPanel() {
             setIsUploading(true);
 
             let finalImageUrl = offerForm.imageUrl;
-            let finalAvatarUrl = offerForm.avatarUrl;
 
             // Upload files if selected
             if (imageFile) {
                 finalImageUrl = await uploadFile(imageFile);
             }
-            if (avatarFile) {
-                finalAvatarUrl = await uploadFile(avatarFile);
-            }
 
             const payload = {
                 ...offerForm,
                 imageUrl: finalImageUrl,
-                avatarUrl: finalAvatarUrl,
+                avatarUrl: finalImageUrl,
                 bannerUrl: '', // Deprecated
                 totalBudget: Number(offerForm.totalBudget),
                 cpmRate: Number(offerForm.cpmRate),
@@ -1072,8 +1068,8 @@ function AdminPanel() {
             {/* Create Offer Modal */}
             {
                 showOfferForm && (
-                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-y-auto">
-                        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl my-8">
+                    <div className="fixed inset-0 bg-black/80 flex items-start justify-center z-50 p-4 py-12 overflow-y-auto">
+                        <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl mt-12 mb-24">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold">{editingOfferId ? 'Редактировать оффер' : 'Создать оффер'}</h3>
                                 <button onClick={() => setShowOfferForm(false)} className="text-zinc-400 hover:text-white">
@@ -1165,7 +1161,7 @@ function AdminPanel() {
                                 </div>
 
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 gap-6">
                                     {/* Main Image Upload */}
                                     <div>
                                         <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
@@ -1207,45 +1203,7 @@ function AdminPanel() {
                                         </div>
                                     </div>
 
-                                    {/* Avatar Upload */}
-                                    <div>
-                                        <label className="block text-sm text-zinc-500 mb-2 flex items-center gap-2">
-                                            <Users size={14} />
-                                            Аватар *
-                                        </label>
-                                        <div className="space-y-2">
-                                            <label className="flex flex-col items-center justify-center w-full h-32 bg-zinc-800 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-blue-500/50 hover:bg-zinc-800/80 transition-all group overflow-hidden relative">
-                                                {(avatarPreview || offerForm.avatarUrl) ? (
-                                                    <img
-                                                        src={avatarPreview || getImgUrl(offerForm.avatarUrl)}
-                                                        alt="Preview"
-                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
-                                                    />
-                                                ) : (
-                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-zinc-500 group-hover:text-blue-400">
-                                                        <Upload size={24} className="mb-2" />
-                                                        <p className="text-xs">Загрузить файл</p>
-                                                    </div>
-                                                )}
-                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <p className="text-sm font-medium text-white drop-shadow-md">Изменить</p>
-                                                </div>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0];
-                                                        if (file) {
-                                                            setAvatarFile(file);
-                                                            setAvatarPreview(URL.createObjectURL(file));
-                                                        }
-                                                    }}
-                                                    className="hidden"
-                                                />
-                                            </label>
-                                            <p className="text-[10px] text-zinc-600 text-center">Иконка канала/блогера</p>
-                                        </div>
-                                    </div>
+
                                 </div>
 
                                 <div>

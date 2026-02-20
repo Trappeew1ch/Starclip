@@ -20,41 +20,42 @@ interface RapidApiStats {
 async function getTikTokVideoId(url: string): Promise<string | null> {
     try {
         // 1. Try to extract from URL if it's already a full URL
-        const fullUrlMatch = url.match(/\/video\/(\d+)/);
+        const fullUrlMatch = url.match(/\/(?:video|photo)\/(\d+)/);
         if (fullUrlMatch) {
             return fullUrlMatch[1];
         }
 
-        // 2. If it's a short URL (vt.tiktok.com etc), resolve redirect
-        if (url.includes('vt.tiktok.com') || url.includes('/t/')) {
+        // 2. If it's a short URL (or didn't match regex), try to resolve it
+        if (url.includes('tiktok.com') || url.includes('/t/')) {
             console.log(`🔄 Resolving short URL: ${url}`);
 
             const config: any = {
                 maxRedirects: 5,
-                validateStatus: (status: number) => status >= 200 && status < 400
+                validateStatus: (status: number) => status >= 200 && status < 400,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
             };
 
-            // Use proxy if strictly needed for resolution (often TikTok blocks DC IPs)
-            // But let's try without first, as axios might handle it if we fake UA
             if (process.env.YTDLP_PROXY) {
                 const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
                 config.httpsAgent = agent;
-                config.proxy = false; // Disable axios default proxy handling
+                config.proxy = false;
             }
 
-            const response = await axios.head(url, config);
-            const resolvedUrl = response.request.res.responseUrl || response.headers.location;
+            const response = await axios.get(url, config);
+            const resolvedUrl = response.request?.res?.responseUrl || response.headers?.location;
 
             if (resolvedUrl) {
                 console.log(`➡️ Resolved to: ${resolvedUrl}`);
-                const match = resolvedUrl.match(/\/video\/(\d+)/);
+                const match = resolvedUrl.match(/\/(?:video|photo)\/(\d+)/);
                 if (match) return match[1];
             }
         }
 
         return null;
-    } catch (error) {
-        console.error('Error extracting TikTok ID:', error);
+    } catch (error: any) {
+        console.error('Error extracting TikTok ID:', error.message);
         return null;
     }
 }
