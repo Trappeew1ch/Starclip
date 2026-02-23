@@ -30,27 +30,39 @@ async function getTikTokVideoId(url: string): Promise<string | null> {
             console.log(`🔄 Resolving short URL: ${url}`);
 
             try {
-                // Use native fetch to follow redirects
-                const response = await fetch(url, {
-                    method: 'GET',
-                    redirect: 'follow', // Follow all redirects
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                let currentUrl = url;
+                // Follow up to 3 redirects manually to extract the video ID without executing anti-bot JS
+                for (let i = 0; i < 3; i++) {
+                    const response = await fetch(currentUrl, {
+                        method: 'GET',
+                        redirect: 'manual',
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15',
+                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        }
+                    });
+
+                    if (response.status >= 300 && response.status < 400) {
+                        const location = response.headers.get('location');
+                        if (location) {
+                            currentUrl = location.startsWith('/') ? new URL(location, currentUrl).href : location;
+                            console.log(`➡️ Redirected to: ${currentUrl}`);
+
+                            const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
+                            if (match) return match[1];
+
+                            const vMatch = currentUrl.match(/[?&]v=(\d+)/) || currentUrl.match(/\/v\/(\d+)/);
+                            if (vMatch) return vMatch[1];
+                        } else {
+                            break;
+                        }
+                    } else {
+                        // Reached final URL (200 OK) or error
+                        const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
+                        if (match) return match[1];
+                        break;
                     }
-                });
-
-                const finalUrl = response.url;
-                console.log(`➡️ Resolved to: ${finalUrl}`);
-
-                const match = finalUrl.match(/\/(?:video|photo)\/(\d+)/);
-                if (match) return match[1];
-
-                // Alternative check: sometimes the ID is passed as a query param or path param
-                const vMatch = finalUrl.match(/[?&]v=(\d+)/) || finalUrl.match(/\/v\/(\d+)/);
-                if (vMatch) return vMatch[1];
-
+                }
             } catch (err) {
                 console.error('Fetch redirect error for TikTok:', err);
             }
@@ -84,13 +96,21 @@ export async function getTikTokStatsRapid(url: string): Promise<RapidApiStats | 
 
         console.log(`🚀 Fetching stats from RapidAPI for ID: ${videoId}`);
 
-        const response = await axios.get('https://tiktok-api23.p.rapidapi.com/api/post/detail', {
+        const config: any = {
             params: { videoId },
             headers: {
                 'x-rapidapi-key': apiKey,
                 'x-rapidapi-host': apiHost
             }
-        });
+        };
+
+        if (process.env.YTDLP_PROXY) {
+            const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
+            config.httpsAgent = agent;
+            config.proxy = false;
+        }
+
+        const response = await axios.get(`https://${apiHost}/api/post/detail`, config);
 
         const data = response.data;
         const item = data?.itemInfo?.itemStruct;
