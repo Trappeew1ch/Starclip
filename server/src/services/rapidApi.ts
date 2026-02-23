@@ -29,27 +29,30 @@ async function getTikTokVideoId(url: string): Promise<string | null> {
         if (url.includes('tiktok.com') || url.includes('/t/')) {
             console.log(`🔄 Resolving short URL: ${url}`);
 
-            const config: any = {
-                maxRedirects: 5,
-                validateStatus: (status: number) => status >= 200 && status < 400,
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                }
-            };
+            try {
+                // Use native fetch to follow redirects
+                const response = await fetch(url, {
+                    method: 'GET',
+                    redirect: 'follow', // Follow all redirects
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                    }
+                });
 
-            if (process.env.YTDLP_PROXY) {
-                const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
-                config.httpsAgent = agent;
-                config.proxy = false;
-            }
+                const finalUrl = response.url;
+                console.log(`➡️ Resolved to: ${finalUrl}`);
 
-            const response = await axios.get(url, config);
-            const resolvedUrl = response.request?.res?.responseUrl || response.headers?.location;
-
-            if (resolvedUrl) {
-                console.log(`➡️ Resolved to: ${resolvedUrl}`);
-                const match = resolvedUrl.match(/\/(?:video|photo)\/(\d+)/);
+                const match = finalUrl.match(/\/(?:video|photo)\/(\d+)/);
                 if (match) return match[1];
+
+                // Alternative check: sometimes the ID is passed as a query param or path param
+                const vMatch = finalUrl.match(/[?&]v=(\d+)/) || finalUrl.match(/\/v\/(\d+)/);
+                if (vMatch) return vMatch[1];
+
+            } catch (err) {
+                console.error('Fetch redirect error for TikTok:', err);
             }
         }
 
