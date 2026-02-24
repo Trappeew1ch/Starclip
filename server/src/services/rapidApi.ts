@@ -33,17 +33,26 @@ async function getTikTokVideoId(url: string): Promise<string | null> {
                 let currentUrl = url;
                 // Follow up to 3 redirects manually to extract the video ID without executing anti-bot JS
                 for (let i = 0; i < 3; i++) {
-                    const response = await fetch(currentUrl, {
+                    const config: any = {
                         method: 'GET',
-                        redirect: 'manual',
+                        maxRedirects: 0, // Manual redirect handling
+                        validateStatus: (status: number) => status >= 200 && status < 400,
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15',
                             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                         }
-                    });
+                    };
+
+                    if (process.env.YTDLP_PROXY) {
+                        const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
+                        config.httpsAgent = agent;
+                        config.proxy = false;
+                    }
+
+                    const response = await axios.get(currentUrl, config);
 
                     if (response.status >= 300 && response.status < 400) {
-                        const location = response.headers.get('location');
+                        const location = response.headers.location;
                         if (location) {
                             currentUrl = location.startsWith('/') ? new URL(location, currentUrl).href : location;
                             console.log(`➡️ Redirected to: ${currentUrl}`);
