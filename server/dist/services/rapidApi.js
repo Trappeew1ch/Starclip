@@ -1,5 +1,24 @@
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { SocksProxyAgent } from 'socks-proxy-agent';
+/**
+ * Create the correct proxy agent based on the YTDLP_PROXY env variable.
+ * Supports: socks5://user:pass@host:port, http://user:pass@host:port, or user:pass@host:port (defaults to socks5)
+ */
+function createProxyAgent() {
+    const proxy = process.env.YTDLP_PROXY;
+    if (!proxy)
+        return null;
+    // If it already has a protocol prefix, use as-is
+    if (proxy.startsWith('socks5://') || proxy.startsWith('socks4://') || proxy.startsWith('socks://')) {
+        return new SocksProxyAgent(proxy);
+    }
+    if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
+        return new HttpsProxyAgent(proxy);
+    }
+    // No prefix — default to socks5 (most common for residential proxies)
+    return new SocksProxyAgent(`socks5://${proxy}`);
+}
 /**
  * Extract Video ID from TikTok URL
  * Handles full URLs and short URLs (vt.tiktok.com, vm.tiktok.com)
@@ -11,7 +30,7 @@ async function getTikTokVideoId(url) {
         if (fullUrlMatch) {
             return fullUrlMatch[1];
         }
-        // 2. Short URL — follow redirects without proxy (proxy blocks TikTok CDN)
+        // 2. Short URL — follow redirects to find the real video URL
         if (url.includes('tiktok.com') || url.includes('/t/')) {
             console.log(`🔄 Resolving short URL: ${url}`);
             let currentUrl = url;
@@ -87,12 +106,14 @@ export async function getTikTokStatsRapid(url) {
             headers: {
                 'x-rapidapi-key': apiKey,
                 'x-rapidapi-host': apiHost
-            }
+            },
+            timeout: 15000
         };
-        if (process.env.YTDLP_PROXY) {
-            const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
+        const agent = createProxyAgent();
+        if (agent) {
             config.httpsAgent = agent;
             config.proxy = false;
+            console.log('🌐 Using proxy for RapidAPI request');
         }
         const response = await axios.get(`https://${apiHost}/api/post/detail`, config);
         const data = response.data;
