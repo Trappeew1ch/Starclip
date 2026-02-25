@@ -15,46 +15,39 @@ interface RapidApiStats {
 
 /**
  * Extract Video ID from TikTok URL
- * Handles full URLs and short URLs (vt.tiktok.com)
+ * Handles full URLs and short URLs (vt.tiktok.com, vm.tiktok.com)
  */
 async function getTikTokVideoId(url: string): Promise<string | null> {
     try {
-        // 1. Try to extract from URL if it's already a full URL
+        // 1. Try to extract directly from URL if it already has /video/ or /photo/
         const fullUrlMatch = url.match(/\/(?:video|photo)\/(\d+)/);
         if (fullUrlMatch) {
             return fullUrlMatch[1];
         }
 
-        // 2. If it's a short URL (or didn't match regex), try to resolve it
+        // 2. Short URL — follow redirects without proxy (proxy blocks TikTok CDN)
         if (url.includes('tiktok.com') || url.includes('/t/')) {
             console.log(`🔄 Resolving short URL: ${url}`);
 
-            try {
-                let currentUrl = url;
-                // Follow up to 3 redirects manually to extract the video ID without executing anti-bot JS
-                for (let i = 0; i < 3; i++) {
-                    const config: any = {
-                        method: 'GET',
-                        maxRedirects: 0, // Manual redirect handling
+            let currentUrl = url;
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await axios.get(currentUrl, {
+                        maxRedirects: 0,
                         validateStatus: (status: number) => status >= 200 && status < 400,
                         headers: {
                             'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15',
                             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        }
-                    };
-
-                    if (process.env.YTDLP_PROXY) {
-                        const agent = new HttpsProxyAgent(process.env.YTDLP_PROXY);
-                        config.httpsAgent = agent;
-                        config.proxy = false;
-                    }
-
-                    const response = await axios.get(currentUrl, config);
+                        },
+                        timeout: 8000
+                    });
 
                     if (response.status >= 300 && response.status < 400) {
-                        const location = response.headers.location;
+                        const location = response.headers.location as string | undefined;
                         if (location) {
-                            currentUrl = location.startsWith('/') ? new URL(location, currentUrl).href : location;
+                            currentUrl = location.startsWith('/')
+                                ? new URL(location, currentUrl).href
+                                : location;
                             console.log(`➡️ Redirected to: ${currentUrl}`);
 
                             const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
@@ -66,14 +59,15 @@ async function getTikTokVideoId(url: string): Promise<string | null> {
                             break;
                         }
                     } else {
-                        // Reached final URL (200 OK) or error
+                        // Final destination
                         const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
                         if (match) return match[1];
                         break;
                     }
+                } catch (stepErr: any) {
+                    console.error(`Redirect step ${i} failed:`, stepErr.message);
+                    break;
                 }
-            } catch (err) {
-                console.error('Fetch redirect error for TikTok:', err);
             }
         }
 
@@ -136,11 +130,11 @@ export async function getTikTokStatsRapid(url: string): Promise<RapidApiStats | 
             views: parseInt(stats.playCount) || 0,
             likes: parseInt(stats.diggCount) || 0,
             comments: parseInt(stats.commentCount) || 0,
-            reposts: parseInt(stats.shareCount) || 0, // RapidAPI mapping: shareCount usually used for reposts/shares
+            reposts: parseInt(stats.shareCount) || 0,
             description: item.desc || '',
             thumbnailUrl: item.video?.cover || item.video?.originCover || '',
             title: item.desc || '',
-            isVerified: false // Will be verified by hashtag check in worker
+            isVerified: false
         };
     } catch (error: any) {
         console.error('❌ RapidAPI error:', error.response?.data || error.message);
