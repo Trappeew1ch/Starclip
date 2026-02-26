@@ -101,23 +101,32 @@ export async function getTikTokStatsRapid(url) {
             return null;
         }
         console.log(`🚀 Fetching stats from RapidAPI for ID: ${videoId}`);
+        const urlWithParams = new URL(`https://${apiHost}/api/post/detail`);
+        urlWithParams.searchParams.append('videoId', videoId);
         const config = {
-            params: { videoId },
+            method: 'GET',
             headers: {
                 'x-rapidapi-key': apiKey,
                 'x-rapidapi-host': apiHost,
-                'Host': apiHost // Force host header to prevent Nginx 400 errors
-            },
-            timeout: 15000
+                'Host': apiHost,
+                'Accept': 'application/json'
+            }
         };
         const agent = createProxyAgent();
         if (agent) {
-            config.httpsAgent = agent;
-            config.proxy = false; // Prevent axios from interpreting this as a direct HTTP proxy requiring absolute URI format
+            config.agent = agent; // Node-fetch uses 'agent' (not httpsAgent)
             console.log('🌐 Using proxy for RapidAPI request');
         }
-        const response = await axios.get(`https://${apiHost}/api/post/detail`, config);
-        const data = response.data;
+        // We use native fetch here instead of axios because axios + socks-proxy-agent
+        // sometimes sends absolute URIs (GET https://...) in the HTTP request line
+        // which Nginx on RapidAPI rejects with 400 Bad Request. Fetch sends correct relative paths.
+        const response = await fetch(urlWithParams.toString(), config);
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error(`❌ RapidAPI HTTP Error: ${response.status} ${response.statusText}`, errText);
+            return null;
+        }
+        const data = await response.json();
         const item = data?.itemInfo?.itemStruct;
         if (!item) {
             console.error('❌ RapidAPI returned no item info');
@@ -137,7 +146,7 @@ export async function getTikTokStatsRapid(url) {
         };
     }
     catch (error) {
-        console.error('❌ RapidAPI error:', error.response?.data || error.message);
+        console.error('❌ RapidAPI error:', error.message);
         return null;
     }
 }
