@@ -105,14 +105,15 @@ export async function getTikTokStatsRapid(url) {
             params: { videoId },
             headers: {
                 'x-rapidapi-key': apiKey,
-                'x-rapidapi-host': apiHost
+                'x-rapidapi-host': apiHost,
+                'Host': apiHost // Force host header to prevent Nginx 400 errors
             },
             timeout: 15000
         };
         const agent = createProxyAgent();
         if (agent) {
             config.httpsAgent = agent;
-            config.proxy = false;
+            config.proxy = false; // Prevent axios from interpreting this as a direct HTTP proxy requiring absolute URI format
             console.log('🌐 Using proxy for RapidAPI request');
         }
         const response = await axios.get(`https://${apiHost}/api/post/detail`, config);
