@@ -25,9 +25,9 @@ const __dirname = path.dirname(__filename);
 // Load env vars
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
 // dist/index.js -> ../.env.production (in server root)
-dotenv.config({ path: path.join(__dirname, `../${envFile}`) });
+dotenv.config({ path: path.join(__dirname, `../${envFile}`), override: true });
 console.log(`📂 Loaded environment from ${envFile} at ${path.join(__dirname, `../${envFile}`)}`);
-console.log(`🔑 RAPIDAPI_KEY present: ${!!process.env.RAPIDAPI_KEY}`);
+console.log(`🔑 RAPIDAPI_KEY present: ${!!process.env.RAPIDAPI_KEY} (Starts with: ${process.env.RAPIDAPI_KEY?.substring(0, 5)}...)`);
 
 export const prisma = new PrismaClient();
 
