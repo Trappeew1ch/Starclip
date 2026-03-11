@@ -236,7 +236,17 @@ router.get('/users/:id', async (req, res) => {
                 campaigns: {
                     include: { offer: true }
                 },
-                socialAccounts: true
+                socialAccounts: true,
+                referrals: {
+                    select: {
+                        id: true,
+                        username: true,
+                        firstName: true,
+                        telegramId: true,
+                        createdAt: true
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }
             }
         });
 
@@ -280,7 +290,8 @@ router.get('/users/:id', async (req, res) => {
                 offerName: c.offer.name,
                 joinedAt: c.joinedAt
             })),
-            socialAccounts: user.socialAccounts
+            socialAccounts: user.socialAccounts,
+            referrals: user.referrals
         });
     } catch (error) {
         console.error('Get user error:', error);

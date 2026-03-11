@@ -1,27 +1,72 @@
-import axios from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import { SocksProxyAgent } from 'socks-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 /**
  * Create the correct proxy agent based on the YTDLP_PROXY env variable.
  * Supports: socks5://user:pass@host:port, http://user:pass@host:port, or user:pass@host:port (defaults to socks5)
+ *
+ * IMPORTANT: We use node-fetch (not native fetch) because native Node.js fetch
+ * does NOT support the `agent` option and silently ignores the proxy.
  */
 function createProxyAgent() {
     const proxy = process.env.YTDLP_PROXY;
     if (!proxy)
         return null;
-    // If it already has a protocol prefix, use as-is
     if (proxy.startsWith('socks5://') || proxy.startsWith('socks4://') || proxy.startsWith('socks://')) {
         return new SocksProxyAgent(proxy);
     }
     if (proxy.startsWith('http://') || proxy.startsWith('https://')) {
         return new HttpsProxyAgent(proxy);
     }
-    // No prefix — default to socks5 (most common for residential proxies)
+    // No prefix — default to socks5
     return new SocksProxyAgent(`socks5://${proxy}`);
 }
 /**
- * Extract Video ID from TikTok URL
- * Handles full URLs and short URLs (vt.tiktok.com, vm.tiktok.com)
+ * Perform an HTTP GET request using the https module directly (which respects agents),
+ * bypassing native fetch entirely (which ignores agents in Node.js 18+).
+ */
+async function fetchWithAgent(url, headers, agent) {
+    const https = await import('https');
+    const http = await import('http');
+    const { URL: NodeURL } = await import('url');
+    return new Promise((resolve, reject) => {
+        const parsed = new NodeURL(url);
+        const isHttps = parsed.protocol === 'https:';
+        const lib = isHttps ? https : http;
+        const options = {
+            hostname: parsed.hostname,
+            port: parsed.port || (isHttps ? 443 : 80),
+            path: parsed.pathname + parsed.search,
+            method: 'GET',
+            headers,
+        };
+        if (agent) {
+            options.agent = agent;
+        }
+        const req = lib.request(options, (res) => {
+            const chunks = [];
+            res.on('data', (chunk) => chunks.push(chunk));
+            res.on('end', () => {
+                const body = Buffer.concat(chunks).toString('utf8');
+                const status = res.statusCode || 0;
+                resolve({
+                    ok: status >= 200 && status < 300,
+                    status,
+                    text: async () => body,
+                    json: async () => JSON.parse(body),
+                });
+            });
+        });
+        req.on('error', reject);
+        req.setTimeout(15000, () => {
+            req.destroy(new Error('Request timed out'));
+        });
+        req.end();
+    });
+}
+/**
+ * Extract Video ID from TikTok URL.
+ * Handles full URLs and short URLs (vt.tiktok.com, vm.tiktok.com).
+ * Uses native fetch for redirect resolution (no proxy needed for TikTok redirects).
  */
 async function getTikTokVideoId(url) {
     try {
@@ -36,35 +81,44 @@ async function getTikTokVideoId(url) {
             let currentUrl = url;
             for (let i = 0; i < 5; i++) {
                 try {
-                    const response = await axios.get(currentUrl, {
-                        maxRedirects: 0,
-                        validateStatus: (status) => status >= 200 && status < 400,
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15',
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                        },
-                        timeout: 8000
+                    // Use https module directly to follow redirects manually
+                    const https = await import('https');
+                    const { URL: NodeURL } = await import('url');
+                    const location = await new Promise((resolve) => {
+                        const parsed = new NodeURL(currentUrl);
+                        const req = https.get({
+                            hostname: parsed.hostname,
+                            port: parsed.port || 443,
+                            path: parsed.pathname + parsed.search,
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15',
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            },
+                        }, (res) => {
+                            res.resume(); // consume + discard body
+                            if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) {
+                                resolve(res.headers.location || null);
+                            }
+                            else {
+                                resolve(null);
+                            }
+                        });
+                        req.on('error', () => resolve(null));
+                        req.setTimeout(8000, () => { req.destroy(); resolve(null); });
                     });
-                    if (response.status >= 300 && response.status < 400) {
-                        const location = response.headers.location;
-                        if (location) {
-                            currentUrl = location.startsWith('/')
-                                ? new URL(location, currentUrl).href
-                                : location;
-                            console.log(`➡️ Redirected to: ${currentUrl}`);
-                            const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
-                            if (match)
-                                return match[1];
-                            const vMatch = currentUrl.match(/[?&]v=(\d+)/) || currentUrl.match(/\/v\/(\d+)/);
-                            if (vMatch)
-                                return vMatch[1];
-                        }
-                        else {
-                            break;
-                        }
+                    if (location) {
+                        currentUrl = location.startsWith('/')
+                            ? new URL(location, currentUrl).href
+                            : location;
+                        console.log(`➡️ Redirected to: ${currentUrl}`);
+                        const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
+                        if (match)
+                            return match[1];
+                        const vMatch = currentUrl.match(/[?&]v=(\d+)/) || currentUrl.match(/\/v\/(\d+)/);
+                        if (vMatch)
+                            return vMatch[1];
                     }
                     else {
-                        // Final destination
                         const match = currentUrl.match(/\/(?:video|photo)\/(\d+)/);
                         if (match)
                             return match[1];
@@ -85,7 +139,8 @@ async function getTikTokVideoId(url) {
     }
 }
 /**
- * Fetch TikTok Stats using RapidAPI
+ * Fetch TikTok Stats using RapidAPI.
+ * Uses Node.js https module directly to properly support proxy agents.
  */
 export async function getTikTokStatsRapid(url) {
     try {
@@ -97,39 +152,33 @@ export async function getTikTokStatsRapid(url) {
         const apiKey = process.env.RAPIDAPI_KEY;
         const apiHost = process.env.RAPIDAPI_HOST || 'tiktok-api23.p.rapidapi.com';
         if (!apiKey) {
-            console.error('❌ RAPIDAPI_KEY is missing');
+            console.error('❌ RAPIDAPI_KEY is missing from .env');
             return null;
         }
-        console.log(`🚀 Fetching stats from RapidAPI for ID: ${videoId}`);
-        const urlWithParams = new URL(`https://${apiHost}/api/post/detail`);
-        urlWithParams.searchParams.append('videoId', videoId);
-        const config = {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-key': apiKey,
-                'x-rapidapi-host': apiHost,
-                'Host': apiHost,
-                'Accept': 'application/json'
-            }
-        };
         const agent = createProxyAgent();
         if (agent) {
-            config.agent = agent; // Node-fetch uses 'agent' (not httpsAgent)
             console.log('🌐 Using proxy for RapidAPI request');
         }
-        // We use native fetch here instead of axios because axios + socks-proxy-agent
-        // sometimes sends absolute URIs (GET https://...) in the HTTP request line
-        // which Nginx on RapidAPI rejects with 400 Bad Request. Fetch sends correct relative paths.
-        const response = await fetch(urlWithParams.toString(), config);
+        else {
+            console.warn('⚠️ No YTDLP_PROXY set — RapidAPI request will use server IP (may be geo-blocked)');
+        }
+        const targetUrl = `https://${apiHost}/api/post/detail?videoId=${videoId}`;
+        console.log(`🚀 Fetching stats from RapidAPI for ID: ${videoId}`);
+        const response = await fetchWithAgent(targetUrl, {
+            'x-rapidapi-key': apiKey,
+            'x-rapidapi-host': apiHost,
+            'Host': apiHost,
+            'Accept': 'application/json',
+        }, agent);
         if (!response.ok) {
             const errText = await response.text();
-            console.error(`❌ RapidAPI HTTP Error: ${response.status} ${response.statusText}`, errText);
+            console.error(`❌ RapidAPI HTTP Error: ${response.status}`, errText);
             return null;
         }
         const data = await response.json();
         const item = data?.itemInfo?.itemStruct;
         if (!item) {
-            console.error('❌ RapidAPI returned no item info');
+            console.error('❌ RapidAPI returned no item info:', JSON.stringify(data).slice(0, 200));
             return null;
         }
         const stats = item.stats;

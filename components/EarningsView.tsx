@@ -294,7 +294,7 @@ export const EarningsView: React.FC<EarningsViewProps> = ({ onNavigate }) => {
                                     type="number"
                                     value={withdrawAmount}
                                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                                    placeholder="Минимум 500 ₽"
+                                    placeholder="Сумма"
                                     className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
                                 />
                                 <p className="text-xs text-zinc-500 mt-1">

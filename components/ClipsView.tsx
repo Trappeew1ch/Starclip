@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Youtube, Instagram, Music2, Clock, CheckCircle2, FileText, LayoutList, Plus, X, Download, ExternalLink, Play, UploadCloud, Link, AlertTriangle, MessageCircle, BarChart2, ArrowRight, ShieldCheck, Copy } from 'lucide-react';
+
+const TiktokIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.94-.49 3.91-1.57 5.51-1.29 1.9-3.42 3.19-5.74 3.47-2.31.28-4.73-.24-6.62-1.54-1.89-1.29-3.21-3.3-3.69-5.59-.47-2.28-.1-4.72 1.09-6.72 1.18-1.99 3.22-3.45 5.52-3.9 1.63-.3 3.33-.18 4.86.36v4.2c-1.18-.34-2.45-.3-3.57.17-1.12.46-2.02 1.34-2.49 2.45-.46 1.11-.47 2.37-.03 3.49.43 1.1 1.25 1.98 2.31 2.48 1.05.49 2.29.56 3.41.21 1.11-.34 2.04-1.12 2.58-2.14.36-.67.54-1.43.51-2.2V.02z" />
+    </svg>
+);
 import { MyCampaign, SocialAccount, AccountVideo } from '../types';
 import { clipsApi, usersApi, campaignsApi } from '../services';
 import { useApp } from '../context';
@@ -163,7 +169,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
         switch (platform) {
             case 'youtube': return <Youtube className={`text-red-500 ${className}`} />;
             case 'instagram': return <Instagram className={`text-pink-500 ${className}`} />;
-            case 'tiktok': return <Music2 className={`text-cyan-400 ${className}`} />;
+            case 'tiktok': return <TiktokIcon className={`text-white ${className}`} size={16} />;
             default: return null;
         }
     };
@@ -446,7 +452,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                         {activeModal === 'upload' && (
                             <div className="flex flex-col items-center">
                                 <h3 className="text-xl font-bold text-white mb-2">Ссылка на клип</h3>
-                                <p className="text-zinc-400 text-sm text-center mb-6">Вставьте ссылку на видео из TikTok, YouTube Shorts или Instagram Reels.</p>
+                                <p className="text-zinc-400 text-sm text-center mb-6">Вставьте ссылку на видео из TikTok.</p>
 
                                 <div className="w-full mb-6">
                                     <div className="relative">
@@ -468,13 +474,7 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                                 {/* Supported Platforms Icons */}
                                 <div className="flex gap-4 mb-8 justify-center opacity-50 grayscale transition-all hover:grayscale-0 hover:opacity-100">
                                     <div className="flex flex-col items-center gap-1">
-                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5"><Youtube size={20} className="text-red-500" /></div>
-                                    </div>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5"><Instagram size={20} className="text-pink-500" /></div>
-                                    </div>
-                                    <div className="flex flex-col items-center gap-1">
-                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5"><Music2 size={20} className="text-cyan-400" /></div>
+                                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/5"><TiktokIcon size={20} className="text-white" /></div>
                                     </div>
                                 </div>
 
@@ -503,23 +503,9 @@ export const ClipsView: React.FC<ClipsViewProps> = ({ campaigns }) => {
                             <div>
                                 <h3 className="text-xl font-bold text-white mb-6">Подключить аккаунт</h3>
                                 <div className="space-y-3">
-                                    <button onClick={() => handleConnectAccount('youtube')} className="w-full p-4 rounded-xl bg-[#27272a] hover:bg-[#3f3f46] flex items-center justify-between transition-colors group">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center"><Youtube className="text-red-500" size={18} /></div>
-                                            <span className="font-medium text-white">YouTube</span>
-                                        </div>
-                                        <Plus size={18} className="text-zinc-500 group-hover:text-white" />
-                                    </button>
-                                    <button onClick={() => handleConnectAccount('instagram')} className="w-full p-4 rounded-xl bg-[#27272a] hover:bg-[#3f3f46] flex items-center justify-between transition-colors group">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-pink-500/10 flex items-center justify-center"><Instagram className="text-pink-500" size={18} /></div>
-                                            <span className="font-medium text-white">Instagram</span>
-                                        </div>
-                                        <Plus size={18} className="text-zinc-500 group-hover:text-white" />
-                                    </button>
                                     <button onClick={() => handleConnectAccount('tiktok')} className="w-full p-4 rounded-xl bg-[#27272a] hover:bg-[#3f3f46] flex items-center justify-between transition-colors group">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center"><Music2 className="text-cyan-400" size={18} /></div>
+                                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><TiktokIcon className="text-white" size={18} /></div>
                                             <span className="font-medium text-white">TikTok</span>
                                         </div>
                                         <Plus size={18} className="text-zinc-500 group-hover:text-white" />

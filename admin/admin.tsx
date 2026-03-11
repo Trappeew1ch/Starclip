@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Search, Users, Film, DollarSign, Clock, Check, X, Plus, ChevronRight, RefreshCw, Youtube, Instagram, Music2, LogIn, Shield, Image, Upload, Menu, LayoutDashboard, Wallet, Video } from 'lucide-react';
 
+const TiktokIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.94-.49 3.91-1.57 5.51-1.29 1.9-3.42 3.19-5.74 3.47-2.31.28-4.73-.24-6.62-1.54-1.89-1.29-3.21-3.3-3.69-5.59-.47-2.28-.1-4.72 1.09-6.72 1.18-1.99 3.22-3.45 5.52-3.9 1.63-.3 3.33-.18 4.86.36v4.2c-1.18-.34-2.45-.3-3.57.17-1.12.46-2.02 1.34-2.49 2.45-.46 1.11-.47 2.37-.03 3.49.43 1.1 1.25 1.98 2.31 2.48 1.05.49 2.29.56 3.41.21 1.11-.34 2.04-1.12 2.58-2.14.36-.67.54-1.43.51-2.2V.02z" />
+    </svg>
+);
+
 // Use relative URL so it works both locally and in production
 const API_URL = '/api';
 
@@ -230,7 +236,7 @@ function AdminPanel() {
         totalBudget: '',
         cpmRate: '',
         language: 'Russian',
-        platforms: ['youtube', 'tiktok', 'instagram'],
+        platforms: ['tiktok'],
         description: '',
         requirements: '',
         assetsLink: '',
@@ -429,7 +435,7 @@ function AdminPanel() {
             setEditingOfferId(null);
             setOfferForm({
                 name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '',
-                totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
+                totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['tiktok'],
                 description: '', requirements: '', assetsLink: '', daysLeft: '30'
             });
             // Reset files and previews
@@ -504,7 +510,7 @@ function AdminPanel() {
         switch (platform) {
             case 'youtube': return <Youtube size={16} className="text-red-500" />;
             case 'instagram': return <Instagram size={16} className="text-pink-500" />;
-            case 'tiktok': return <Music2 size={16} className="text-cyan-400" />;
+            case 'tiktok': return <TiktokIcon size={16} className="text-white" />;
             default: return null;
         }
     };
@@ -922,6 +928,33 @@ function AdminPanel() {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* User Referrals */}
+                            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6">
+                                <h3 className="text-lg font-semibold mb-4">Рефералы ({selectedUser.referrals?.length || 0})</h3>
+                                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                                    {selectedUser.referrals?.map((ref: any) => (
+                                        <div key={ref.id} className="flex items-center gap-4 p-3 bg-zinc-800/50 rounded-lg">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center font-bold text-sm">
+                                                {ref.firstName?.[0] || ref.username?.[0] || '@'}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium">@{ref.username || 'anonymous'}</p>
+                                                <p className="text-xs text-zinc-500">{ref.firstName}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs text-zinc-500">
+                                                    {new Date(ref.createdAt).toLocaleDateString()}
+                                                </p>
+                                                <p className="text-[10px] text-zinc-600 font-mono mt-0.5">ID: {ref.telegramId}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {(!selectedUser.referrals || selectedUser.referrals.length === 0) && (
+                                        <p className="text-center text-zinc-500 py-4 text-sm">Нет приглашенных пользователей</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -935,7 +968,7 @@ function AdminPanel() {
                                         setEditingOfferId(null);
                                         setOfferForm({
                                             name: '', title: '', type: 'STREAMER', imageUrl: '', avatarUrl: '', bannerUrl: '',
-                                            totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['youtube', 'tiktok', 'instagram'],
+                                            totalBudget: '', cpmRate: '', language: 'Russian', platforms: ['tiktok'],
                                             description: '', requirements: '', assetsLink: '', daysLeft: '30'
                                         });
                                         setImageFile(null);

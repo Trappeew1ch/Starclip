@@ -2,6 +2,12 @@ import React from 'react';
 import { ArrowLeft, Share2, Instagram, Youtube, Music, Download, CheckCircle, AlertCircle, Clock, Globe, Wallet, TrendingUp } from 'lucide-react';
 import { Offer } from '../types';
 
+const TiktokIcon = ({ className, size = 20 }: { className?: string, size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className={className}>
+        <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v7.2c0 1.94-.49 3.91-1.57 5.51-1.29 1.9-3.42 3.19-5.74 3.47-2.31.28-4.73-.24-6.62-1.54-1.89-1.29-3.21-3.3-3.69-5.59-.47-2.28-.1-4.72 1.09-6.72 1.18-1.99 3.22-3.45 5.52-3.9 1.63-.3 3.33-.18 4.86.36v4.2c-1.18-.34-2.45-.3-3.57.17-1.12.46-2.02 1.34-2.49 2.45-.46 1.11-.47 2.37-.03 3.49.43 1.1 1.25 1.98 2.31 2.48 1.05.49 2.29.56 3.41.21 1.11-.34 2.04-1.12 2.58-2.14.36-.67.54-1.43.51-2.2V.02z" />
+    </svg>
+);
+
 interface OfferDetailsViewProps {
     offer: Offer;
     onBack: () => void;
@@ -109,9 +115,7 @@ export const OfferDetailsView: React.FC<OfferDetailsViewProps> = ({ offer, onBac
                             <span className="text-xs text-zinc-500 font-medium">Платформы</span>
                         </div>
                         <div className="flex gap-2 text-white z-10">
-                            <Instagram size={20} className="hover:text-pink-500 transition-colors" />
-                            <Music size={20} className="hover:text-cyan-400 transition-colors" />
-                            <Youtube size={20} className="hover:text-red-500 transition-colors" />
+                            <TiktokIcon size={20} className="hover:text-white transition-colors" />
                         </div>
                     </div>
 
