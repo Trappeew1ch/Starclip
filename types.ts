@@ -1,7 +1,8 @@
 
 export enum CreatorType {
   YOUTUBER = 'YOUTUBER',
-  STREAMER = 'STREAMER'
+  STREAMER = 'STREAMER',
+  BRAND = 'BRAND'
 }
 
 export interface Offer {

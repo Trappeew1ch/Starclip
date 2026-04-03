@@ -39,7 +39,7 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
             <div className="flex p-1 glass-panel rounded-xl mb-5 mx-1">
                 <button
                     onClick={() => setActiveTab(CreatorType.STREAMER)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.STREAMER
+                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.STREAMER
                         ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
                         : 'text-zinc-400 hover:text-zinc-200'
                         }`}
@@ -48,12 +48,21 @@ export const OfferSection: React.FC<OfferSectionProps> = ({ offers, onOfferClick
                 </button>
                 <button
                     onClick={() => setActiveTab(CreatorType.YOUTUBER)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.YOUTUBER
+                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.YOUTUBER
                         ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
                         : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                 >
                     Ютуберы
+                </button>
+                <button
+                    onClick={() => setActiveTab(CreatorType.BRAND)}
+                    className={`flex-1 py-2 text-xs font-medium rounded-lg transition-colors relative ${activeTab === CreatorType.BRAND
+                        ? 'text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                        }`}
+                >
+                    Бренды
                 </button>
             </div>
 

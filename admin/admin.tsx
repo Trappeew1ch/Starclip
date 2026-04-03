@@ -1146,6 +1146,7 @@ function AdminPanel() {
                                         >
                                             <option value="STREAMER">Стример</option>
                                             <option value="YOUTUBER">Ютубер</option>
+                                            <option value="BRAND">Бренд</option>
                                         </select>
                                     </div>
                                     <div>
